@@ -3,6 +3,9 @@ venv/
 .venv/
 env/
 
+# Environment variables / secrets
+.env
+
 # IDE files
 .vscode/
 
