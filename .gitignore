@@ -1,0 +1,23 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# IDE files
+.vscode/
+
+# Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Large weight files exceeding GitHub's 100MB limit
+ml_model/weights/sam2.1_hiera_small.pt
+
+# Large dataset directories
+datasets/
+ml_model/final_dataset/
+
+# Backend uploads folder
+backend/uploads/
