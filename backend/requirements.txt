@@ -3,3 +3,9 @@ uvicorn
 ultralytics
 pillow
 python-multipart
+sqlalchemy
+psycopg[binary]
+catboost
+joblib
+pandas
+python-dotenv

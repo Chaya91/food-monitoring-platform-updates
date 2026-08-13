@@ -3,6 +3,9 @@ venv/
 .venv/
 env/
 
+# Environment variables / secrets
+.env
+
 # IDE files
 .vscode/
 
@@ -21,3 +24,6 @@ ml_model/final_dataset/
 
 # Backend uploads folder
 backend/uploads/
+# ML demo generated outputs
+ml_model/debug_rotten_mask.png
+ml_model/outputs/

@@ -21,7 +21,7 @@ class FreshnessClassifier:
 
         class_id = int(result.probs.top1)
         confidence = float(result.probs.top1conf)
-        print(result.names)
+
         class_name = result.names[class_id]
-        print(result.names)
+
         return class_name, confidence
