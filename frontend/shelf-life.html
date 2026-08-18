@@ -1,234 +1,917 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shelf-Life Prediction - FreshGuard</title>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Local CSS -->
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/dashboard.css" />
-    <link rel="stylesheet" href="css/forms.css" />
-    <link rel="stylesheet" href="css/responsive.css" />
-    
-    <style>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Shelf-Life Prediction - FreshGuard</title>
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+
+  <!-- Local CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/forms.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+
+  <style>
+    .forecast-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 992px) {
       .forecast-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
+        grid-template-columns: 1fr;
       }
-      @media (max-width: 992px) {
-        .forecast-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      
-      .slider-value-display {
-        display: inline-block;
-        font-weight: 700;
-        color: var(--primary);
-        font-size: 0.9rem;
-        background-color: rgba(16, 185, 129, 0.08);
-        padding: 2px 8px;
-        border-radius: var(--radius-sm);
-        margin-left: 8px;
-      }
-      
-      .spinner-fg {
-        width: 48px;
-        height: 48px;
-        border: 4px solid var(--border-color);
-        border-top-color: var(--primary);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 1rem;
-      }
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app-container">
-      <!-- Dynamic Sidebar Container -->
-      <div id="sidebar-container"></div>
+    }
 
-      <!-- Main Wrapper -->
-      <div class="main-wrapper">
-        <!-- Dynamic Navbar Header -->
-        <header id="navbar-container"></header>
+    .slider-value-display {
+      display: inline-block;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.9rem;
+      background-color: rgba(16, 185, 129, 0.08);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      margin-left: 8px;
+    }
 
-        <!-- Main Body Content -->
-        <main class="content-body">
-          <div class="forecast-grid">
-            <!-- Left Side: Forecasting Form -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-              <div class="card-freshguard animate-fade-in">
-                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1.25rem;">Predictive AI Settings</h4>
+    .spinner-fg {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
 
-                <form id="shelf-life-form">
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-container">
+
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+
+      <!-- Navbar -->
+      <header id="navbar-container"></header>
+
+      <!-- Main Content -->
+      <main class="content-body">
+
+        <div class="forecast-grid">
+
+          <!-- =====================================================
+               LEFT SIDE - INPUT FORM
+          ====================================================== -->
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+            <div class="card-freshguard animate-fade-in">
+
+              <h4
+                style="
+                  font-family: var(--font-heading);
+                  font-weight: 700;
+                  margin-bottom: 1.25rem;
+                "
+              >
+                Predictive AI Settings
+              </h4>
+
+              <form id="shelf-life-form">
+
+                <!-- =================================================
+                     APPLICATION CATEGORY
+                ================================================== -->
+                <div class="form-group-fg">
+
+                  <label for="pred-category">
+                    Product Type / Category
+                  </label>
+
+                  <select
+                    id="pred-category"
+                    class="input-fg"
+                    required
+                  >
+                    <option value="" disabled selected>
+                      Select category...
+                    </option>
+
+                    <option value="Fruits">
+                      Fruits
+                    </option>
+
+                    <option value="Vegetables">
+                      Vegetables
+                    </option>
+
+                    <option value="Dairy Products">
+                      Dairy Products
+                    </option>
+
+                    <option value="Meat & Poultry">
+                      Meat & Poultry
+                    </option>
+
+                    <option value="Seafood">
+                      Seafood
+                    </option>
+
+                    <option value="Bakery Products">
+                      Bakery Products
+                    </option>
+
+                    <option value="Packaged Foods">
+                      Packaged Foods
+                    </option>
+
+                    <option value="Beverages">
+                      Beverages
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <!-- =================================================
+                     FOOD TYPE + VARIETY
+                     REQUIRED BY SHELF-LIFE ML MODEL
+                ================================================== -->
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1rem;
+                  "
+                >
+
+                  <!-- Food Type -->
                   <div class="form-group-fg">
-                    <label for="pred-category">Product Type / Category</label>
-                    <select id="pred-category" class="input-fg" required>
-                      <option value="" disabled selected>Select category...</option>
-                      <option value="Fruits">Fruits</option>
-                      <option value="Vegetables">Vegetables</option>
-                      <option value="Dairy Products">Dairy Products</option>
-                      <option value="Meat & Poultry">Meat & Poultry</option>
-                      <option value="Seafood">Seafood</option>
-                      <option value="Bakery Products">Bakery Products</option>
-                      <option value="Packaged Foods">Packaged Foods</option>
-                      <option value="Beverages">Beverages</option>
+
+                    <label for="pred-food-type">
+                      Food Type
+                    </label>
+
+                    <select
+                      id="pred-food-type"
+                      class="input-fg"
+                      required
+                    >
+
+                      <option value="" disabled selected>
+                        Select food...
+                      </option>
+
+                      <option value="Apple">
+                        Apple
+                      </option>
+
+                      <option value="Banana">
+                        Banana
+                      </option>
+
+                      <option value="Orange">
+                        Orange
+                      </option>
+
+                      <option value="Tomato">
+                        Tomato
+                      </option>
+
+                      <option value="Carrot">
+                        Carrot
+                      </option>
+
                     </select>
+
                   </div>
 
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group-fg">
-                      <label for="pred-packaging">Packaging Configuration</label>
-                      <select id="pred-packaging" class="input-fg" required>
-                        <option value="Crate / Loose">Crate / Loose</option>
-                        <option value="Vacuum Seal">Vacuum Seal</option>
-                        <option value="Sealed Plastic Bag">Sealed Plastic Bag</option>
-                        <option value="Plastic Wrap">Plastic Wrap</option>
-                      </select>
-                    </div>
-                    <div class="form-group-fg">
-                      <label for="pred-duration">Storage Age So Far (Days)</label>
-                      <input type="number" id="pred-duration" class="input-fg" placeholder="0" min="0" required value="0">
-                    </div>
-                  </div>
 
-                  <!-- Sliders for micro environment simulation -->
+                  <!-- Variety -->
                   <div class="form-group-fg">
-                    <label style="display: flex; justify-content: space-between; align-items: center;">
-                      <span>Simulated Storage Temperature</span>
-                      <span><span class="slider-value-display" id="temp-val-lbl">4.0°C</span></span>
+
+                    <label for="pred-variety">
+                      Variety
                     </label>
-                    <input type="range" id="pred-temp" min="-20" max="30" step="0.5" value="4.0" style="width: 100%; accent-color: var(--primary);" />
+
+                    <input
+                      type="text"
+                      id="pred-variety"
+                      class="input-fg"
+                      placeholder="e.g. Granny Smith"
+                      required
+                    />
+
                   </div>
 
-                  <div class="form-group-fg" style="margin-bottom: 1.5rem;">
-                    <label style="display: flex; justify-content: space-between; align-items: center;">
-                      <span>Simulated Relative Humidity</span>
-                      <span><span class="slider-value-display" id="humidity-val-lbl">70%</span></span>
-                    </label>
-                    <input type="range" id="pred-humidity" min="10" max="100" step="1" value="70" style="width: 100%; accent-color: var(--primary);" />
-                  </div>
+                </div>
 
-                  <!-- Optional Upload Dropzone -->
+
+                <!-- =================================================
+                     PACKAGING + STORAGE AGE
+                ================================================== -->
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1rem;
+                  "
+                >
+
+                  <!-- Packaging -->
                   <div class="form-group-fg">
-                    <label>Product Visual Photo (Optional)</label>
-                    <div class="dropzone-fg" id="pred-dropzone" style="padding: 1.25rem;">
-                      <input type="file" id="pred-file-input" style="display: none;" accept="image/*">
-                      <div id="pred-placeholder">
-                        <i class="fa-solid fa-image dropzone-icon" style="font-size: 1.5rem; margin-bottom: 0.25rem;"></i>
-                        <span class="dropzone-text" style="font-size: 0.8rem; display: block;">Drop photo to refine prediction visual factor</span>
-                      </div>
-                      <div class="dropzone-preview" id="pred-preview-frame" style="height: 100px;">
-                        <img id="pred-preview-img" src="#" alt="Upload Preview">
-                        <button type="button" class="dropzone-remove-btn" id="pred-remove-trigger"><i class="fa-solid fa-xmark"></i></button>
-                      </div>
-                    </div>
+
+                    <label for="pred-packaging">
+                      Packaging Configuration
+                    </label>
+
+                    <select
+                      id="pred-packaging"
+                      class="input-fg"
+                    >
+
+                      <option value="Crate / Loose">
+                        Crate / Loose
+                      </option>
+
+                      <option value="Vacuum Seal">
+                        Vacuum Seal
+                      </option>
+
+                      <option value="Sealed Plastic Bag">
+                        Sealed Plastic Bag
+                      </option>
+
+                      <option value="Plastic Wrap">
+                        Plastic Wrap
+                      </option>
+
+                    </select>
+
                   </div>
 
-                  <button type="submit" class="btn-fg btn-fg-primary" style="width: 100%; height: 44px; font-size: 0.95rem;">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Predict Shelf Life
-                  </button>
-                </form>
-              </div>
+
+                  <!-- Storage Age -->
+                  <div class="form-group-fg">
+
+                    <label for="pred-duration">
+                      Storage Age So Far (Days)
+                    </label>
+
+                    <input
+                      type="number"
+                      id="pred-duration"
+                      class="input-fg"
+                      placeholder="0"
+                      min="0"
+                      value="0"
+                      required
+                    />
+
+                  </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     TEMPERATURE
+                ================================================== -->
+
+                <div class="form-group-fg">
+
+                  <label
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    "
+                  >
+
+                    <span>
+                      Simulated Storage Temperature
+                    </span>
+
+                    <span>
+                      <span
+                        class="slider-value-display"
+                        id="temp-val-lbl"
+                      >
+                        4.0°C
+                      </span>
+                    </span>
+
+                  </label>
+
+                  <input
+                    type="range"
+                    id="pred-temp"
+                    min="-20"
+                    max="30"
+                    step="0.5"
+                    value="4.0"
+                    style="
+                      width: 100%;
+                      accent-color: var(--primary);
+                    "
+                  />
+
+                </div>
+
+
+                <!-- =================================================
+                     HUMIDITY
+                ================================================== -->
+
+                <div
+                  class="form-group-fg"
+                  style="margin-bottom: 1.5rem;"
+                >
+
+                  <label
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    "
+                  >
+
+                    <span>
+                      Simulated Relative Humidity
+                    </span>
+
+                    <span>
+                      <span
+                        class="slider-value-display"
+                        id="humidity-val-lbl"
+                      >
+                        70%
+                      </span>
+                    </span>
+
+                  </label>
+
+                  <input
+                    type="range"
+                    id="pred-humidity"
+                    min="10"
+                    max="100"
+                    step="1"
+                    value="70"
+                    style="
+                      width: 100%;
+                      accent-color: var(--primary);
+                    "
+                  />
+
+                </div>
+
+
+                <!-- =================================================
+                     OPTIONAL IMAGE
+                ================================================== -->
+
+                <div class="form-group-fg">
+
+                  <label>
+                    Product Visual Photo (Optional)
+                  </label>
+
+                  <div
+                    class="dropzone-fg"
+                    id="pred-dropzone"
+                    style="padding: 1.25rem;"
+                  >
+
+                    <input
+                      type="file"
+                      id="pred-file-input"
+                      style="display: none;"
+                      accept="image/*"
+                    />
+
+                    <!-- Placeholder -->
+                    <div id="pred-placeholder">
+
+                      <i
+                        class="fa-solid fa-image dropzone-icon"
+                        style="
+                          font-size: 1.5rem;
+                          margin-bottom: 0.25rem;
+                        "
+                      ></i>
+
+                      <span
+                        class="dropzone-text"
+                        style="
+                          font-size: 0.8rem;
+                          display: block;
+                        "
+                      >
+                        Drop photo to refine prediction visual factor
+                      </span>
+
+                    </div>
+
+
+                    <!-- Preview -->
+                    <div
+                      class="dropzone-preview"
+                      id="pred-preview-frame"
+                      style="height: 100px;"
+                    >
+
+                      <img
+                        id="pred-preview-img"
+                        src="#"
+                        alt="Upload Preview"
+                      />
+
+                      <button
+                        type="button"
+                        class="dropzone-remove-btn"
+                        id="pred-remove-trigger"
+                      >
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     PREDICT BUTTON
+                ================================================== -->
+
+                <button
+                  type="submit"
+                  class="btn-fg btn-fg-primary"
+                  style="
+                    width: 100%;
+                    height: 44px;
+                    font-size: 0.95rem;
+                  "
+                >
+
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                  Predict Shelf Life
+
+                </button>
+
+              </form>
+
             </div>
 
-            <!-- Right Side: Predictive Outputs -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-              
-              <!-- Loader State -->
-              <div class="card-freshguard text-center" id="forecast-loader" style="display: none; padding: 6rem 2rem;">
-                <div class="spinner-fg"></div>
-                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.5rem;">Generating Shelf-Life Forecast</h4>
-                <p class="text-muted" style="font-size: 0.85rem;">Calculating biochemical decay curve, packaging multiplier values and thermal index compliance metrics...</p>
-              </div>
-
-              <!-- Static Placeholder State -->
-              <div class="card-freshguard text-center" id="forecast-placeholder-state" style="padding: 6rem 2rem; border-style: dashed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-hourglass-start text-muted" style="font-size: 3rem; margin-bottom: 1.25rem; opacity: 0.6;"></i>
-                <h4 style="font-family: var(--font-heading); font-weight: 600; color: var(--text-main);">Forecast Diagnostics</h4>
-                <p class="text-muted" style="font-size: 0.85rem; max-width: 320px; margin: 0.5rem auto 0;">Simulate environmental factors on the left to estimate remaining storage life and expiries.</p>
-              </div>
-
-              <!-- Forecast Output details -->
-              <div class="card-freshguard" id="forecast-result-card" style="display: none;">
-                <h4 style="font-family: var(--font-heading); font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
-                  Shelf-Life AI Forecast
-                </h4>
-
-                <div class="details-metrics-grid" style="margin-top: 0; margin-bottom: 1.5rem;">
-                  <div class="metric-detail-item" style="grid-column: span 2; background-color: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
-                    <span class="metric-detail-label">Estimated Remaining Shelf Life</span>
-                    <div class="metric-detail-value" style="font-size: 2.25rem; color: var(--primary);" id="out-shelf-days">7 Days</div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Expected Expiry Date</span>
-                    <div class="metric-detail-value" style="font-size: 1rem;" id="out-expiry-date">18 August 2026</div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Risk Level</span>
-                    <div class="metric-detail-value text-fresh" id="out-risk-level">Low</div>
-                  </div>
-                  <div class="metric-detail-item" style="grid-column: span 2;">
-                    <span class="metric-detail-label">Prediction Confidence</span>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
-                      <div class="progress-bar-fg" style="flex: 1; height: 6px;">
-                        <div class="progress-bar-fill bg-fresh" id="out-confidence-bar" style="width: 92%;"></div>
-                      </div>
-                      <span id="out-confidence-val" style="font-size: 0.85rem; font-weight: 700;">92%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <h5 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.75rem;">Quality Stage Forecast Timeline</h5>
-                
-                <div class="shelf-life-timeline" id="shelf-life-timeline-tracker">
-                  <div class="timeline-step" id="step-fresh">
-                    <div class="timeline-dot"><i class="fa-solid fa-circle"></i></div>
-                    <span class="timeline-label">Fresh</span>
-                  </div>
-                  <div class="timeline-step" id="step-good">
-                    <div class="timeline-dot"><i class="fa-solid fa-circle"></i></div>
-                    <span class="timeline-label">Good</span>
-                  </div>
-                  <div class="timeline-step" id="step-accept">
-                    <div class="timeline-dot"><i class="fa-solid fa-circle"></i></div>
-                    <span class="timeline-label">Acceptable</span>
-                  </div>
-                  <div class="timeline-step" id="step-near">
-                    <div class="timeline-dot"><i class="fa-solid fa-circle"></i></div>
-                    <span class="timeline-label">Near Spoil</span>
-                  </div>
-                  <div class="timeline-step" id="step-spoiled">
-                    <div class="timeline-dot"><i class="fa-solid fa-circle"></i></div>
-                    <span class="timeline-label">Spoiled</span>
-                  </div>
-                </div>
-
-                <div style="margin-top: 2rem; padding: 12px; background-color: var(--bg-app); border-radius: var(--radius-md); font-size: 0.85rem; border-left: 3px solid var(--secondary);">
-                  <strong style="display: block; margin-bottom: 2px;"><i class="fa-solid fa-circle-info" style="color: var(--secondary); margin-right: 4px;"></i> Environmental Recommendation:</strong>
-                  <span id="out-instructions">Keep refrigerated below 4.0°C and maintain sealed packaging to double stability metrics.</span>
-                </div>
-              </div>
-
-            </div>
           </div>
-        </main>
-      </div>
+
+
+          <!-- =====================================================
+               RIGHT SIDE - OUTPUT
+          ====================================================== -->
+
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              gap: 1.5rem;
+            "
+          >
+
+            <!-- =================================================
+                 LOADER
+            ================================================== -->
+
+            <div
+              class="card-freshguard text-center"
+              id="forecast-loader"
+              style="
+                display: none;
+                padding: 6rem 2rem;
+              "
+            >
+
+              <div class="spinner-fg"></div>
+
+              <h4
+                style="
+                  font-family: var(--font-heading);
+                  font-weight: 700;
+                  margin-bottom: 0.5rem;
+                "
+              >
+                Generating Shelf-Life Forecast
+              </h4>
+
+              <p
+                class="text-muted"
+                style="font-size: 0.85rem;"
+              >
+                Running the trained shelf-life prediction model...
+              </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 PLACEHOLDER
+            ================================================== -->
+
+            <div
+              class="card-freshguard text-center"
+              id="forecast-placeholder-state"
+              style="
+                padding: 6rem 2rem;
+                border-style: dashed;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+
+              <i
+                class="fa-solid fa-hourglass-start text-muted"
+                style="
+                  font-size: 3rem;
+                  margin-bottom: 1.25rem;
+                  opacity: 0.6;
+                "
+              ></i>
+
+              <h4
+                style="
+                  font-family: var(--font-heading);
+                  font-weight: 600;
+                  color: var(--text-main);
+                "
+              >
+                Forecast Diagnostics
+              </h4>
+
+              <p
+                class="text-muted"
+                style="
+                  font-size: 0.85rem;
+                  max-width: 320px;
+                  margin: 0.5rem auto 0;
+                "
+              >
+                Enter food type, variety and storage conditions
+                to estimate remaining shelf life.
+              </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 RESULT CARD
+            ================================================== -->
+
+            <div
+              class="card-freshguard"
+              id="forecast-result-card"
+              style="display: none;"
+            >
+
+              <h4
+                style="
+                  font-family: var(--font-heading);
+                  font-weight: 700;
+                  border-bottom: 1px solid var(--border-color);
+                  padding-bottom: 0.75rem;
+                  margin-bottom: 1.25rem;
+                "
+              >
+                Shelf-Life AI Forecast
+              </h4>
+
+
+              <!-- Metrics -->
+
+              <div
+                class="details-metrics-grid"
+                style="
+                  margin-top: 0;
+                  margin-bottom: 1.5rem;
+                "
+              >
+
+                <!-- Remaining Shelf Life -->
+
+                <div
+                  class="metric-detail-item"
+                  style="
+                    grid-column: span 2;
+                    background-color: rgba(16, 185, 129, 0.05);
+                    border-color: rgba(16, 185, 129, 0.2);
+                  "
+                >
+
+                  <span class="metric-detail-label">
+                    Estimated Remaining Shelf Life
+                  </span>
+
+                  <div
+                    class="metric-detail-value"
+                    style="
+                      font-size: 2.25rem;
+                      color: var(--primary);
+                    "
+                    id="out-shelf-days"
+                  >
+                    --
+                  </div>
+
+                </div>
+
+
+                <!-- Expiry Date -->
+
+                <div class="metric-detail-item">
+
+                  <span class="metric-detail-label">
+                    Expected Expiry Date
+                  </span>
+
+                  <div
+                    class="metric-detail-value"
+                    style="font-size: 1rem;"
+                    id="out-expiry-date"
+                  >
+                    --
+                  </div>
+
+                </div>
+
+
+                <!-- Risk Level -->
+
+                <div class="metric-detail-item">
+
+                  <span class="metric-detail-label">
+                    Risk Level
+                  </span>
+
+                  <div
+                    class="metric-detail-value text-fresh"
+                    id="out-risk-level"
+                  >
+                    --
+                  </div>
+
+                </div>
+
+
+                <!-- Confidence -->
+
+                <div
+                  class="metric-detail-item"
+                  style="grid-column: span 2;"
+                >
+
+                  <span class="metric-detail-label">
+                    Prediction Confidence
+                  </span>
+
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      margin-top: 4px;
+                    "
+                  >
+
+                    <div
+                      class="progress-bar-fg"
+                      style="
+                        flex: 1;
+                        height: 6px;
+                      "
+                    >
+
+                      <div
+                        class="progress-bar-fill bg-fresh"
+                        id="out-confidence-bar"
+                        style="width: 0%;"
+                      ></div>
+
+                    </div>
+
+                    <span
+                      id="out-confidence-val"
+                      style="
+                        font-size: 0.85rem;
+                        font-weight: 700;
+                      "
+                    >
+                      --
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- =================================================
+                   TIMELINE
+              ================================================== -->
+
+              <h5
+                style="
+                  font-family: var(--font-heading);
+                  font-weight: 700;
+                  margin-bottom: 0.75rem;
+                "
+              >
+                Quality Stage Forecast Timeline
+              </h5>
+
+
+              <div
+                class="shelf-life-timeline"
+                id="shelf-life-timeline-tracker"
+              >
+
+                <div
+                  class="timeline-step"
+                  id="step-fresh"
+                >
+
+                  <div class="timeline-dot">
+                    <i class="fa-solid fa-circle"></i>
+                  </div>
+
+                  <span class="timeline-label">
+                    Fresh
+                  </span>
+
+                </div>
+
+
+                <div
+                  class="timeline-step"
+                  id="step-good"
+                >
+
+                  <div class="timeline-dot">
+                    <i class="fa-solid fa-circle"></i>
+                  </div>
+
+                  <span class="timeline-label">
+                    Good
+                  </span>
+
+                </div>
+
+
+                <div
+                  class="timeline-step"
+                  id="step-accept"
+                >
+
+                  <div class="timeline-dot">
+                    <i class="fa-solid fa-circle"></i>
+                  </div>
+
+                  <span class="timeline-label">
+                    Acceptable
+                  </span>
+
+                </div>
+
+
+                <div
+                  class="timeline-step"
+                  id="step-near"
+                >
+
+                  <div class="timeline-dot">
+                    <i class="fa-solid fa-circle"></i>
+                  </div>
+
+                  <span class="timeline-label">
+                    Near Spoil
+                  </span>
+
+                </div>
+
+
+                <div
+                  class="timeline-step"
+                  id="step-spoiled"
+                >
+
+                  <div class="timeline-dot">
+                    <i class="fa-solid fa-circle"></i>
+                  </div>
+
+                  <span class="timeline-label">
+                    Spoiled
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <!-- =================================================
+                   RECOMMENDATION
+              ================================================== -->
+
+              <div
+                style="
+                  margin-top: 2rem;
+                  padding: 12px;
+                  background-color: var(--bg-app);
+                  border-radius: var(--radius-md);
+                  font-size: 0.85rem;
+                  border-left: 3px solid var(--secondary);
+                "
+              >
+
+                <strong
+                  style="
+                    display: block;
+                    margin-bottom: 2px;
+                  "
+                >
+
+                  <i
+                    class="fa-solid fa-circle-info"
+                    style="
+                      color: var(--secondary);
+                      margin-right: 4px;
+                    "
+                  ></i>
+
+                  Environmental Recommendation:
+
+                </strong>
+
+                <span id="out-instructions">
+                  Enter the storage conditions and run the
+                  shelf-life prediction.
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+
     </div>
 
-    <!-- Core Scripts -->
-    <script src="js/mock-data.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/main.js"></script>
-    <!-- Page Specific Script -->
-    <script src="js/shelf-life.js"></script>
-  </body>
+  </div>
+
+
+  <!-- ==========================================================
+       SCRIPTS
+  =========================================================== -->
+
+  <script src="js/mock-data.js"></script>
+
+  <script src="js/api.js"></script>
+
+  <script src="js/auth.js"></script>
+
+  <script src="js/main.js"></script>
+
+  <script src="js/shelf-life.js"></script>
+
+</body>
+
 </html>

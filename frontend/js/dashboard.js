@@ -1,270 +1,1406 @@
-// FreshGuard Dashboard Controller
+// ==========================================================
+// FreshGuard Dashboard
+// Fully connected to FastAPI + PostgreSQL
+// ==========================================================
+
+const API_BASE_URL = "http://127.0.0.1:8000";
+
+let dashboardCharts = {};
+
+
+// ==========================================================
+// PAGE LOAD
+// ==========================================================
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const user = MockStore.getCurrentUser();
-  if (!user) return;
 
-  // Set welcome greeting
-  const titleEl = document.getElementById("welcome-title");
-  if (titleEl) {
-    const hours = new Date().getHours();
-    let salutation = "Good Morning";
-    if (hours >= 12 && hours < 17) salutation = "Good Afternoon";
-    if (hours >= 17) salutation = "Good Evening";
-    titleEl.textContent = `${salutation}, ${user.name}`;
-  }
+    // ------------------------------------------------------
+    // User greeting
+    // ------------------------------------------------------
 
-  // Load stats and populate
-  await loadDashboardStats();
-  
-  // Render charts
-  renderDashboardCharts();
+    let user = null;
 
-  // Populate activity log
-  populateActivityLog();
+    try {
+        if (typeof MockStore !== "undefined") {
+            user = MockStore.getCurrentUser();
+        }
+    } catch (error) {
+        console.warn("MockStore unavailable:", error);
+    }
+
+    const titleEl =
+        document.getElementById("welcome-title");
+
+    if (titleEl) {
+
+        const hours =
+            new Date().getHours();
+
+        let salutation =
+            "Good Morning";
+
+        if (
+            hours >= 12 &&
+            hours < 17
+        ) {
+            salutation =
+                "Good Afternoon";
+        }
+
+        if (hours >= 17) {
+            salutation =
+                "Good Evening";
+        }
+
+        const name =
+            user?.name || "User";
+
+        titleEl.textContent =
+            `${salutation}, ${name}`;
+    }
+
+
+    // ------------------------------------------------------
+    // Load everything from backend
+    // ------------------------------------------------------
+
+    await loadDashboard();
+
+
+    // ------------------------------------------------------
+    // Load backend alerts
+    // ------------------------------------------------------
+
+    await loadDashboardAlerts();
 });
 
-async function loadDashboardStats() {
-  const foods = await API.getFoods();
-  
-  const total = foods.length;
-  const fresh = foods.filter(f => f.status === "Fresh").length;
-  const warning = foods.filter(f => f.status === "Warning").length;
-  const nearSpoilage = foods.filter(f => f.status === "Near Spoilage").length;
-  const spoiled = foods.filter(f => f.status === "Spoiled").length;
 
-  // Calculate averages
-  const avgFreshness = total > 0 
-    ? Math.round(foods.reduce((sum, f) => sum + f.freshnessScore, 0) / total) 
-    : 0;
-  
-  const avgShelfLife = total > 0 
-    ? (foods.reduce((sum, f) => sum + f.shelfLifeRemainingDays, 0) / total).toFixed(1)
-    : 0;
+// ==========================================================
+// MAIN DASHBOARD LOADER
+// ==========================================================
 
-  // Populate HTML elements
-  document.getElementById("stat-total-items").textContent = total;
-  document.getElementById("stat-fresh-items").textContent = fresh;
-  document.getElementById("stat-warning-items").textContent = nearSpoilage + warning;
-  document.getElementById("stat-spoiled-items").textContent = spoiled;
-  document.getElementById("stat-avg-freshness").textContent = `${avgFreshness}%`;
-  document.getElementById("stat-avg-shelf-life").textContent = `${avgShelfLife}d`;
+async function loadDashboard() {
+
+    try {
+
+        const [
+            summaryResponse,
+            analyticsResponse
+        ] = await Promise.all([
+
+            fetch(
+                `${API_BASE_URL}/dashboard/summary`
+            ),
+
+            fetch(
+                `${API_BASE_URL}/dashboard/analytics`
+            )
+        ]);
+
+
+        if (!summaryResponse.ok) {
+            throw new Error(
+                "Failed to load dashboard summary"
+            );
+        }
+
+        if (!analyticsResponse.ok) {
+            throw new Error(
+                "Failed to load dashboard analytics"
+            );
+        }
+
+
+        const summary =
+            await summaryResponse.json();
+
+        const analytics =
+            await analyticsResponse.json();
+
+
+        // --------------------------------------------------
+        // Update statistics
+        // --------------------------------------------------
+
+        updateDashboardStats(
+            summary
+        );
+
+
+        // --------------------------------------------------
+        // Render real charts
+        // --------------------------------------------------
+
+        renderDashboardCharts(
+            analytics
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Dashboard loading error:",
+            error
+        );
+
+        showDashboardError(
+            error.message
+        );
+    }
 }
 
-function renderDashboardCharts() {
-  const isDark = document.body.getAttribute("data-theme") === "dark";
-  const gridColor = isDark ? "#374151" : "#e2e8f0";
-  const textColor = isDark ? "#9ca3af" : "#64748b";
 
-  Chart.defaults.color = textColor;
-  Chart.defaults.borderColor = gridColor;
+// ==========================================================
+// UPDATE STAT CARDS
+// ==========================================================
 
-  // 1. Freshness Score Trend (Line)
-  const ctxTrend = document.getElementById("chart-freshness-trend").getContext("2d");
-  new Chart(ctxTrend, {
-    type: 'line',
-    data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [{
-        label: 'Avg Freshness Score (%)',
-        data: [89, 87, 86, 91, 90, 88, 91],
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.4,
-        fill: true,
-        borderWidth: 3
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { min: 60, max: 100 }
-      }
-    }
-  });
+function updateDashboardStats(summary) {
 
-  // 2. Food Quality Distribution (Doughnut)
-  const ctxQual = document.getElementById("chart-quality-dist").getContext("2d");
-  new Chart(ctxQual, {
-    type: 'doughnut',
-    data: {
-      labels: ['Fresh', 'Warning', 'Near Spoilage', 'Spoiled'],
-      datasets: [{
-        data: [60, 20, 12, 8],
-        backgroundColor: ['#10b981', '#eab308', '#f97316', '#ef4444'],
-        borderWidth: isDark ? 2 : 1,
-        borderColor: isDark ? '#1f2937' : '#ffffff'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 12 } }
-      }
-    }
-  });
+    setText(
+        "stat-total-items",
+        summary.total_items ?? 0
+    );
 
-  // 3. Spoilage Risk (Bar)
-  const ctxRisk = document.getElementById("chart-spoilage-risk").getContext("2d");
-  new Chart(ctxRisk, {
-    type: 'bar',
-    data: {
-      labels: ['Fruits', 'Vegetables', 'Dairy', 'Meat', 'Seafood', 'Bakery'],
-      datasets: [{
-        label: 'Avg Spoilage Prob (%)',
-        data: [15, 12, 28, 65, 45, 35],
-        backgroundColor: ['#10b981', '#10b981', '#eab308', '#ef4444', '#f97316', '#eab308'],
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { max: 100 }
-      }
-    }
-  });
 
-  // 4. Shelf-Life Distribution (Horizontal Bar)
-  const ctxShelf = document.getElementById("chart-shelf-life-dist").getContext("2d");
-  new Chart(ctxShelf, {
-    type: 'bar',
-    indexAxis: 'y',
-    data: {
-      labels: ['0-2 Days', '3-5 Days', '6-10 Days', '11+ Days'],
-      datasets: [{
-        label: 'Batches Count',
-        data: [4, 6, 8, 12],
-        backgroundColor: ['#ef4444', '#f97316', '#eab308', '#10b981'],
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } }
-    }
-  });
+    setText(
+        "stat-fresh-items",
+        summary.fresh_items ?? 0
+    );
 
-  // 5. Storage Temperature Log (Line)
-  const ctxTemp = document.getElementById("chart-storage-temp").getContext("2d");
-  new Chart(ctxTemp, {
-    type: 'line',
-    data: {
-      labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
-      datasets: [
-        {
-          label: 'Cold Storage A',
-          data: [3.8, 3.9, 4.2, 4.5, 4.1, 3.9],
-          borderColor: '#10b981',
-          tension: 0.3,
-          borderWidth: 2
-        },
-        {
-          label: 'Cold Storage B',
-          data: [4.1, 4.3, 4.9, 8.2, 4.6, 4.2],
-          borderColor: '#ef4444',
-          tension: 0.3,
-          borderWidth: 2
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
-    }
-  });
 
-  // 6. Storage Humidity Log (Line)
-  const ctxHum = document.getElementById("chart-storage-humidity").getContext("2d");
-  new Chart(ctxHum, {
-    type: 'line',
-    data: {
-      labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
-      datasets: [
-        {
-          label: 'Cold Storage A (%)',
-          data: [85, 86, 85, 87, 85, 84],
-          borderColor: '#6366f1',
-          tension: 0.3,
-          borderWidth: 2
-        },
-        {
-          label: 'Shelf C2 (%)',
-          data: [65, 68, 72, 78, 70, 68],
-          borderColor: '#eab308',
-          tension: 0.3,
-          borderWidth: 2
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
-    }
-  });
+    const warningCount =
+        (summary.good_items ?? 0) +
+        (summary.acceptable_items ?? 0) +
+        (summary.near_spoilage_items ?? 0);
+
+
+    setText(
+        "stat-warning-items",
+        warningCount
+    );
+
+
+    setText(
+        "stat-spoiled-items",
+        summary.spoiled_items ?? 0
+    );
+
+
+    const freshness =
+        Number(
+            summary.average_freshness ?? 0
+        );
+
+
+    setText(
+        "stat-avg-freshness",
+        `${freshness.toFixed(2)}%`
+    );
+
+
+    const shelfLife =
+        Number(
+            summary.average_shelf_life ?? 0
+        );
+
+
+    setText(
+        "stat-avg-shelf-life",
+        `${shelfLife.toFixed(1)}d`
+    );
 }
 
-function populateActivityLog() {
-  const container = document.getElementById("dashboard-activity-list");
-  if (!container) return;
 
-  const alerts = MockStore.getAlerts() || [];
-  
-  // Choose up to 4 significant alerts to show as activities
-  const displayAlerts = alerts.slice(0, 4);
+// ==========================================================
+// SAFE TEXT SETTER
+// ==========================================================
 
-  if (displayAlerts.length === 0) {
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">No recent activities.</div>`;
-    return;
-  }
+function setText(id, value) {
 
-  container.innerHTML = displayAlerts.map(alert => {
-    let dotColor = "var(--primary)";
-    if (alert.level === "Critical") dotColor = "var(--spoiled)";
-    else if (alert.level === "Warning") dotColor = "var(--warning)";
+    const element =
+        document.getElementById(id);
 
-    return `
-      <div class="activity-item">
-        <span class="activity-dot" style="background-color: ${dotColor};"></span>
-        <div class="activity-text-wrapper">
-          <div class="activity-desc"><strong>${alert.target}</strong>: ${alert.title}</div>
-          <div class="activity-time">${alert.timestamp}</div>
-        </div>
-      </div>
-    `;
-  }).join("");
+    if (element) {
+        element.textContent =
+            value;
+    }
+}
 
-  // Storage diagnostics panel
-  const diagContainer = document.getElementById("dashboard-storage-diagnostics");
-  if (!diagContainer) return;
 
-  const warnings = alerts.filter(a => a.type === "Storage Alert");
-  if (warnings.length === 0) {
-    diagContainer.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px; color: var(--primary); font-size: 0.85rem;">
-        <i class="fa-solid fa-circle-check" style="font-size: 1.25rem;"></i>
-        <span>All environmental parameters are in optimal range.</span>
-      </div>
-    `;
-    return;
-  }
+// ==========================================================
+// CHARTS
+// ==========================================================
 
-  diagContainer.innerHTML = warnings.slice(0, 2).map(w => {
-    const levelClass = w.level.toLowerCase();
-    const borderCol = w.level === "Critical" ? "var(--spoiled)" : "var(--warning)";
-    return `
-      <div style="padding: 8px 12px; border-left: 3px solid ${borderCol}; background-color: var(--bg-input); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.8rem;">
-        <span style="font-weight: 700; color: ${borderCol}; text-transform: uppercase; font-size: 0.68rem; display: block;">${w.level}</span>
-        <span style="color: var(--text-main); font-weight: 500;">${w.title} - ${w.target}</span>
-      </div>
-    `;
-  }).join("");
+function renderDashboardCharts(
+    analytics
+) {
+
+    destroyExistingCharts();
+
+
+    // ------------------------------------------------------
+    // 1. Freshness Trend
+    // ------------------------------------------------------
+
+    const trend =
+        analytics.freshness_trend || [];
+
+
+    const trendLabels =
+        trend.map(item =>
+            formatDate(item.date)
+        );
+
+
+    const trendValues =
+        trend.map(item =>
+            Number(item.score || 0)
+        );
+
+
+    createLineChart(
+        "chart-freshness-trend",
+        trendLabels.length
+            ? trendLabels
+            : ["No Data"],
+        trendValues.length
+            ? trendValues
+            : [0],
+        "Average Freshness (%)"
+    );
+
+
+    // ------------------------------------------------------
+    // 2. Quality Distribution
+    // ------------------------------------------------------
+
+    const quality =
+        analytics.quality_distribution || [];
+
+
+    const qualityLabels =
+        quality.map(item =>
+            item.status
+        );
+
+
+    const qualityValues =
+        quality.map(item =>
+            Number(item.count || 0)
+        );
+
+
+    createDoughnutChart(
+        "chart-quality-dist",
+        qualityLabels.length
+            ? qualityLabels
+            : ["No Data"],
+        qualityValues.length
+            ? qualityValues
+            : [1]
+    );
+
+
+    // ------------------------------------------------------
+    // 3. Spoilage Risk
+    // ------------------------------------------------------
+
+    const risk =
+        analytics.spoilage_risk || [];
+
+
+    const riskLabels =
+        risk.map(item =>
+            item.category
+        );
+
+
+    const riskValues =
+        risk.map(item =>
+            Number(item.risk || 0)
+        );
+
+
+    createBarChart(
+        "chart-spoilage-risk",
+        riskLabels.length
+            ? riskLabels
+            : ["No Data"],
+        riskValues.length
+            ? riskValues
+            : [0],
+        "Spoilage Risk (%)"
+    );
+
+
+    // ------------------------------------------------------
+    // 4. Shelf-Life Distribution
+    // ------------------------------------------------------
+
+    const shelf =
+        analytics.shelf_life_distribution || [];
+
+
+    const shelfLabels =
+        shelf.map(item =>
+            item.range
+        );
+
+
+    const shelfValues =
+        shelf.map(item =>
+            Number(item.count || 0)
+        );
+
+
+    createHorizontalBarChart(
+        "chart-shelf-life-dist",
+        shelfLabels.length
+            ? shelfLabels
+            : ["No Data"],
+        shelfValues.length
+            ? shelfValues
+            : [0],
+        "Batches"
+    );
+
+
+    // ------------------------------------------------------
+    // 5. Storage Temperature
+    // ------------------------------------------------------
+
+    const temperature =
+        analytics.storage_temperature || [];
+
+
+    renderStorageTemperature(
+        temperature
+    );
+
+
+    // ------------------------------------------------------
+    // 6. Humidity
+    // ------------------------------------------------------
+
+    const humidity =
+        analytics.humidity_logs || [];
+
+
+    renderHumidity(
+        humidity
+    );
+}
+
+
+// ==========================================================
+// CREATE LINE CHART
+// ==========================================================
+
+function createLineChart(
+    canvasId,
+    labels,
+    values,
+    label
+) {
+
+    const canvas =
+        document.getElementById(
+            canvasId
+        );
+
+    if (!canvas) return;
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    dashboardCharts[
+        canvasId
+    ] = new Chart(
+        ctx,
+        {
+            type: "line",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+
+                    {
+                        label: label,
+
+                        data: values,
+
+                        borderColor:
+                            "#10b981",
+
+                        backgroundColor:
+                            "rgba(16,185,129,0.10)",
+
+                        borderWidth: 3,
+
+                        tension: 0.4,
+
+                        fill: true,
+
+                        pointRadius: 4,
+
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio:
+                    false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label:
+                                function(context) {
+
+                                    return `${context.dataset.label}: ${Number(context.raw).toFixed(2)}%`;
+                                }
+                        }
+                    }
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        max: 100,
+
+                        ticks: {
+
+                            callback:
+                                function(value) {
+
+                                    return `${value}%`;
+                                }
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
+
+
+// ==========================================================
+// DOUGHNUT CHART
+// ==========================================================
+
+function createDoughnutChart(
+    canvasId,
+    labels,
+    values
+) {
+
+    const canvas =
+        document.getElementById(
+            canvasId
+        );
+
+    if (!canvas) return;
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    dashboardCharts[
+        canvasId
+    ] = new Chart(
+        ctx,
+        {
+            type: "doughnut",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+
+                    {
+                        data: values,
+
+                        backgroundColor: [
+                            "#10b981",
+                            "#3b82f6",
+                            "#eab308",
+                            "#f97316",
+                            "#ef4444",
+                            "#6b7280"
+                        ],
+
+                        borderWidth: 1
+                    }
+                ]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio:
+                    false,
+
+                plugins: {
+
+                    legend: {
+
+                        position: "bottom",
+
+                        labels: {
+
+                            boxWidth: 12
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
+
+
+// ==========================================================
+// BAR CHART
+// ==========================================================
+
+function createBarChart(
+    canvasId,
+    labels,
+    values,
+    label
+) {
+
+    const canvas =
+        document.getElementById(
+            canvasId
+        );
+
+    if (!canvas) return;
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    dashboardCharts[
+        canvasId
+    ] = new Chart(
+        ctx,
+        {
+            type: "bar",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+
+                    {
+                        label: label,
+
+                        data: values,
+
+                        backgroundColor:
+                            "#10b981",
+
+                        borderRadius: 6
+                    }
+                ]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio:
+                    false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        max: 100,
+
+                        ticks: {
+
+                            callback:
+                                function(value) {
+
+                                    return `${value}%`;
+                                }
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
+
+
+// ==========================================================
+// HORIZONTAL BAR
+// ==========================================================
+
+function createHorizontalBarChart(
+    canvasId,
+    labels,
+    values,
+    label
+) {
+
+    const canvas =
+        document.getElementById(
+            canvasId
+        );
+
+    if (!canvas) return;
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    dashboardCharts[
+        canvasId
+    ] = new Chart(
+        ctx,
+        {
+            type: "bar",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+
+                    {
+                        label: label,
+
+                        data: values,
+
+                        backgroundColor:
+                            [
+                                "#ef4444",
+                                "#f97316",
+                                "#eab308",
+                                "#10b981"
+                            ],
+
+                        borderRadius: 4
+                    }
+                ]
+            },
+
+            options: {
+
+                indexAxis: "y",
+
+                responsive: true,
+
+                maintainAspectRatio:
+                    false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+                },
+
+                scales: {
+
+                    x: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
+
+
+// ==========================================================
+// STORAGE TEMPERATURE
+// ==========================================================
+
+function renderStorageTemperature(
+    data
+) {
+
+    const canvas =
+        document.getElementById(
+            "chart-storage-temp"
+        );
+
+    if (!canvas) return;
+
+
+    if (!data.length) {
+
+        showNoChartData(
+            canvas,
+            "No storage temperature data available"
+        );
+
+        return;
+    }
+
+
+    const labels =
+        data.map(item =>
+            item.time ||
+            item.timestamp ||
+            item.date
+        );
+
+
+    const values =
+        data.map(item =>
+            Number(
+                item.temperature ??
+                item.value ??
+                0
+            )
+        );
+
+
+    createLineChart(
+        "chart-storage-temp",
+        labels,
+        values,
+        "Temperature (°C)"
+    );
+}
+
+
+// ==========================================================
+// HUMIDITY
+// ==========================================================
+
+function renderHumidity(
+    data
+) {
+
+    const canvas =
+        document.getElementById(
+            "chart-storage-humidity"
+        );
+
+    if (!canvas) return;
+
+
+    if (!data.length) {
+
+        showNoChartData(
+            canvas,
+            "No humidity data available"
+        );
+
+        return;
+    }
+
+
+    const labels =
+        data.map(item =>
+            item.time ||
+            item.timestamp ||
+            item.date
+        );
+
+
+    const values =
+        data.map(item =>
+            Number(
+                item.humidity ??
+                item.value ??
+                0
+            )
+        );
+
+
+    createLineChart(
+        "chart-storage-humidity",
+        labels,
+        values,
+        "Humidity (%)"
+    );
+}
+
+
+// ==========================================================
+// NO DATA MESSAGE
+// ==========================================================
+
+function showNoChartData(
+    canvas,
+    message
+) {
+
+    const parent =
+        canvas.parentElement;
+
+    if (!parent) return;
+
+
+    canvas.style.display =
+        "none";
+
+
+    let messageElement =
+        parent.querySelector(
+            ".dashboard-no-data"
+        );
+
+
+    if (!messageElement) {
+
+        messageElement =
+            document.createElement(
+                "div"
+            );
+
+        messageElement.className =
+            "dashboard-no-data";
+
+        messageElement.style.cssText = `
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            height:100%;
+            min-height:180px;
+            color:var(--text-muted,#64748b);
+            font-size:0.9rem;
+            text-align:center;
+        `;
+
+        parent.appendChild(
+            messageElement
+        );
+    }
+
+
+    messageElement.textContent =
+        message;
+}
+
+
+// ==========================================================
+// DESTROY OLD CHARTS
+// ==========================================================
+
+function destroyExistingCharts() {
+
+    Object.values(
+        dashboardCharts
+    ).forEach(chart => {
+
+        try {
+            chart.destroy();
+        } catch (error) {
+            console.warn(
+                "Chart destroy error:",
+                error
+            );
+        }
+
+    });
+
+
+    dashboardCharts = {};
+}
+
+
+// ==========================================================
+// DASHBOARD ALERTS
+// ==========================================================
+
+async function loadDashboardAlerts() {
+
+    const container =
+        document.getElementById(
+            "dashboard-activity-list"
+        );
+
+    if (!container) return;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/dashboard/alerts`
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load alerts"
+            );
+        }
+
+
+        const alerts =
+            await response.json();
+
+
+        renderActivityLog(
+            alerts
+        );
+
+
+        renderStorageDiagnostics(
+            alerts
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Alert loading error:",
+            error
+        );
+
+
+        container.innerHTML = `
+            <div style="
+                text-align:center;
+                color:var(--text-muted);
+                font-size:0.85rem;
+                padding:1rem 0;
+            ">
+                Unable to load recent activities.
+            </div>
+        `;
+    }
+}
+
+
+// ==========================================================
+// ACTIVITY LOG
+// ==========================================================
+
+function renderActivityLog(
+    alerts
+) {
+
+    const container =
+        document.getElementById(
+            "dashboard-activity-list"
+        );
+
+    if (!container) return;
+
+
+    if (
+        !Array.isArray(alerts) ||
+        alerts.length === 0
+    ) {
+
+        container.innerHTML = `
+            <div style="
+                text-align:center;
+                color:var(--text-muted);
+                font-size:0.85rem;
+                padding:1rem 0;
+            ">
+                No recent activities.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const displayAlerts =
+        alerts.slice(0, 4);
+
+
+    container.innerHTML =
+        displayAlerts
+            .map(alert => {
+
+                let dotColor =
+                    "var(--primary)";
+
+
+                if (
+                    alert.level ===
+                    "Critical"
+                ) {
+
+                    dotColor =
+                        "var(--spoiled)";
+                }
+
+                else if (
+                    alert.level ===
+                    "Warning"
+                ) {
+
+                    dotColor =
+                        "var(--warning)";
+                }
+
+
+                return `
+
+                    <div class="activity-item">
+
+                        <span
+                            class="activity-dot"
+                            style="
+                                background-color:
+                                ${dotColor};
+                            "
+                        ></span>
+
+                        <div
+                            class=
+                            "activity-text-wrapper"
+                        >
+
+                            <div
+                                class=
+                                "activity-desc"
+                            >
+
+                                <strong>
+                                    ${escapeHtml(
+                                        alert.target
+                                    )}
+                                </strong>
+
+                                :
+                                ${escapeHtml(
+                                    alert.title
+                                )}
+
+                            </div>
+
+                            <div
+                                class=
+                                "activity-time"
+                            >
+
+                                ${formatTimestamp(
+                                    alert.timestamp
+                                )}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                `;
+            })
+            .join("");
+}
+
+
+// ==========================================================
+// STORAGE DIAGNOSTICS
+// ==========================================================
+
+function renderStorageDiagnostics(
+    alerts
+) {
+
+    const container =
+        document.getElementById(
+            "dashboard-storage-diagnostics"
+        );
+
+    if (!container) return;
+
+
+    // Backend currently does not provide
+    // environmental storage alerts.
+
+    const storageAlerts =
+        Array.isArray(alerts)
+            ? alerts.filter(
+                alert =>
+                    alert.type ===
+                    "Storage Alert"
+            )
+            : [];
+
+
+    if (
+        storageAlerts.length === 0
+    ) {
+
+        container.innerHTML = `
+
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:10px;
+                color:var(--primary);
+                font-size:0.85rem;
+            ">
+
+                <i
+                    class=
+                    "fa-solid fa-circle-check"
+                ></i>
+
+                <span>
+                    No storage alerts available.
+                </span>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        storageAlerts
+            .slice(0, 2)
+            .map(alert => {
+
+                const borderColor =
+                    alert.level ===
+                    "Critical"
+                        ? "var(--spoiled)"
+                        : "var(--warning)";
+
+
+                return `
+
+                    <div style="
+                        padding:8px 12px;
+                        border-left:
+                            3px solid
+                            ${borderColor};
+                        background-color:
+                            var(--bg-input);
+                        border-radius:
+                            0
+                            var(--radius-sm)
+                            var(--radius-sm)
+                            0;
+                        font-size:0.8rem;
+                    ">
+
+                        <span style="
+                            font-weight:700;
+                            color:${borderColor};
+                            text-transform:uppercase;
+                            font-size:0.68rem;
+                            display:block;
+                        ">
+                            ${escapeHtml(
+                                alert.level
+                            )}
+                        </span>
+
+                        <span style="
+                            color:var(--text-main);
+                            font-weight:500;
+                        ">
+                            ${escapeHtml(
+                                alert.title
+                            )}
+                            -
+                            ${escapeHtml(
+                                alert.target
+                            )}
+                        </span>
+
+                    </div>
+                `;
+            })
+            .join("");
+}
+
+
+// ==========================================================
+// DATE FORMAT
+// ==========================================================
+
+function formatDate(
+    value
+) {
+
+    if (!value) {
+        return "Unknown";
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    if (Number.isNaN(
+        date.getTime()
+    )) {
+
+        return String(value);
+    }
+
+
+    return date.toLocaleDateString(
+        "en-IN",
+        {
+            day: "2-digit",
+            month: "short"
+        }
+    );
+}
+
+
+// ==========================================================
+// TIMESTAMP FORMAT
+// ==========================================================
+
+function formatTimestamp(
+    value
+) {
+
+    if (!value) {
+        return "";
+    }
+
+
+    const date =
+        new Date(
+            String(value).replace(
+                " ",
+                "T"
+            )
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return String(value);
+    }
+
+
+    return date.toLocaleString(
+        "en-IN",
+        {
+            day: "2-digit",
+            month: "short",
+
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+}
+
+
+// ==========================================================
+// HTML ESCAPE
+// ==========================================================
+
+function escapeHtml(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+// ==========================================================
+// DASHBOARD ERROR
+// ==========================================================
+
+function showDashboardError(
+    message
+) {
+
+    console.error(
+        "Dashboard error:",
+        message
+    );
+
+
+    const elements = [
+
+        "stat-total-items",
+        "stat-fresh-items",
+        "stat-warning-items",
+        "stat-spoiled-items",
+        "stat-avg-freshness",
+        "stat-avg-shelf-life"
+
+    ];
+
+
+    elements.forEach(id => {
+
+        const element =
+            document.getElementById(id);
+
+        if (element) {
+            element.textContent =
+                "—";
+        }
+
+    });
 }

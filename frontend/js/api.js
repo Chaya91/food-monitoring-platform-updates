@@ -62,61 +62,210 @@ const API = {
   },
 
   // Food Inventory
-  getFoods: () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(MockStore.getFoods());
-      }, 300);
-    });
-  },
+  // ==========================================================
+// Inventory API - Real FastAPI Connection
+// ==========================================================
 
-  createFood: (food) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const foods = MockStore.getFoods();
-        const newFood = {
-          id: "f" + (foods.length + 1) + "_" + Date.now().toString().slice(-4),
-          ...food
-        };
-        foods.unshift(newFood);
-        MockStore.saveFoods(foods);
-        resolve({ success: true, food: newFood });
-      }, 400);
-    });
-  },
+getFoods: async () => {
 
-  updateFood: (id, updatedData) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const foods = MockStore.getFoods();
-        const index = foods.findIndex(f => f.id === id);
-        if (index === -1) {
-          reject(new Error("Food record not found."));
-          return;
-        }
-        foods[index] = { ...foods[index], ...updatedData };
-        MockStore.saveFoods(foods);
-        resolve({ success: true, food: foods[index] });
-      }, 400);
-    });
-  },
+  const response = await fetch(
+    `${API_URL}/inventory`
+  );
 
-  deleteFood: (id) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const foods = MockStore.getFoods();
-        const exists = foods.some(f => f.id === id);
-        if (!exists) {
-          reject(new Error("Food record not found."));
-          return;
-        }
-        const filtered = foods.filter(f => f.id !== id);
-        MockStore.saveFoods(filtered);
-        resolve({ success: true });
-      }, 300);
-    });
-  },
+  if (!response.ok) {
+    throw new Error("Failed to load inventory.");
+  }
 
+  return await response.json();
+},
+
+
+createFood: async (food) => {
+
+  const body = {
+    user_id: food.user_id || 1,
+
+    food_name:
+      food.food_name ||
+      food.name,
+
+    category:
+      food.category,
+
+    batch_number:
+      food.batch_number ||
+      food.batchId ||
+      null,
+
+    quantity:
+      Number(food.quantity) || 1,
+
+    manufacture_date:
+      food.manufacture_date ||
+      food.purchaseDate ||
+      null,
+
+    expiry_date:
+      food.expiry_date ||
+      food.expiryDate ||
+      null
+  };
+
+
+  const response = await fetch(
+    `${API_URL}/inventory`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify(body)
+    }
+  );
+
+
+  if (!response.ok) {
+
+    let errorMessage =
+      "Failed to create inventory item.";
+
+    try {
+
+      const errorData =
+        await response.json();
+
+      errorMessage =
+        errorData.error ||
+        errorMessage;
+
+    } catch (_) {}
+
+    throw new Error(errorMessage);
+  }
+
+
+  const result =
+    await response.json();
+
+  return {
+    success: true,
+    food: result.inventory
+  };
+},
+
+
+updateFood: async (id, food) => {
+
+  const body = {
+    user_id: food.user_id || 1,
+
+    food_name:
+      food.food_name ||
+      food.name,
+
+    category:
+      food.category,
+
+    batch_number:
+      food.batch_number ||
+      food.batchId ||
+      null,
+
+    quantity:
+      Number(food.quantity) || 1,
+
+    manufacture_date:
+      food.manufacture_date ||
+      food.purchaseDate ||
+      null,
+
+    expiry_date:
+      food.expiry_date ||
+      food.expiryDate ||
+      null
+  };
+
+
+  const response = await fetch(
+    `${API_URL}/inventory/${id}`,
+    {
+      method: "PUT",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify(body)
+    }
+  );
+
+
+  if (!response.ok) {
+
+    let errorMessage =
+      "Failed to update inventory item.";
+
+    try {
+
+      const errorData =
+        await response.json();
+
+      errorMessage =
+        errorData.error ||
+        errorMessage;
+
+    } catch (_) {}
+
+    throw new Error(errorMessage);
+  }
+
+
+  const result =
+    await response.json();
+
+  return {
+    success: true,
+    food: result.inventory
+  };
+},
+
+
+deleteFood: async (id) => {
+
+  const response = await fetch(
+    `${API_URL}/inventory/${id}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+
+  if (!response.ok) {
+
+    let errorMessage =
+      "Failed to delete inventory item.";
+
+    try {
+
+      const errorData =
+        await response.json();
+
+      errorMessage =
+        errorData.error ||
+        errorMessage;
+
+    } catch (_) {}
+
+    throw new Error(errorMessage);
+  }
+
+
+  return {
+    success: true
+  };
+},
   // Freshness Analysis
   uploadFoodImage: (file) => {
     return new Promise((resolve) => {
@@ -127,94 +276,129 @@ const API = {
     });
   },
 
-  analyzeFreshness: (category, foodName, details) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Generate mock AI output specific to categories
-        const visualCondition = details.visualCondition || Math.floor(Math.random() * 25) + 70; // 70-95
-        const storageCondition = details.storageCondition || Math.floor(Math.random() * 20) + 75; // 75-95
-        const shelfLifePred = details.shelfLifePred || Math.floor(Math.random() * 20) + 70; // 70-90
-        const productAgeScore = details.productAgeScore || Math.floor(Math.random() * 15) + 80; // 80-95
+  analyzeFreshness: async (file, inventoryId = 1) => {
+  const formData = new FormData();
 
-        // Freshness formula: Visual Condition * 40% + Storage Conditions * 25% + Shelf-Life Prediction * 20% + Product Age * 15%
-        const score = Math.round(
-          visualCondition * 0.40 +
-          storageCondition * 0.25 +
-          shelfLifePred * 0.20 +
-          productAgeScore * 0.15
-        );
+  formData.append("file", file);
+  formData.append("inventory_id", inventoryId);
 
-        let status = "Fresh";
-        let spoilageProbability = Math.round((100 - score) * 0.4);
-        if (score < 50) {
-          status = "Spoiled";
-          spoilageProbability = Math.round(80 + Math.random() * 15);
-        } else if (score < 65) {
-          status = "Near Spoilage";
-          spoilageProbability = Math.round(55 + Math.random() * 20);
-        } else if (score < 80) {
-          status = "Warning";
-          spoilageProbability = Math.round(20 + Math.random() * 25);
-        }
+  const response = await fetch(
+    `${API_URL}/predict?inventory_id=${inventoryId}`,
+    {
+      method: "POST",
+      body: formData
+    }
+  );
 
-        const report = {
-          foodName: foodName || "Sample Food",
-          category: category,
-          freshnessScore: score,
-          status: status,
-          confidence: Math.floor(Math.random() * 10) + 88, // 88% - 98%
-          spoilageProbability: spoilageProbability,
-          visualAnalysis: {
-            colorCondition: score > 75 ? "Excellent" : score > 55 ? "Moderate Fade" : "Discolored / Browned",
-            textureCondition: score > 75 ? "Firm / Solid" : score > 55 ? "Softening" : "Mushy / Decayed",
-            surfaceCondition: score > 75 ? "Smooth & Shiny" : score > 55 ? "Minor Bruises" : "Major Damage",
-            moldDetection: score > 55 ? "Not Detected" : "Spore Growth Detected",
-            bruising: score > 85 ? "None" : score > 65 ? "Minor" : "Severe Bruising",
-            physicalDamage: score > 90 ? "None" : score > 70 ? "Scratched" : "Cracked Outer Skin"
-          },
-          remainingShelfLife: Math.max(0, Math.round(score * 0.15))
-        };
+  if (!response.ok) {
+    let errorMessage = "Freshness analysis failed.";
 
-        resolve(report);
-      }, 2500); // simulate 2.5s scan
-    });
-  },
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch (_) {}
 
+    throw new Error(errorMessage);
+  }
+
+  const result = await response.json();
+
+  /*
+   * The backend currently returns:
+   * food_category
+   * freshness_status
+   * confidence
+   * detection_confidence
+   * rotten_regions
+   * rotten_area_percent
+   * image_id
+   * inventory_id
+   */
+
+  let freshnessScore = result.confidence;
+
+  let spoilageProbability = 0;
+
+  if (result.freshness_status === "Spoiled") {
+    spoilageProbability = 100;
+  } else if (result.freshness_status === "Near Spoilage") {
+    spoilageProbability = 70;
+  } else if (result.freshness_status === "Unknown") {
+    spoilageProbability = 50;
+  }
+
+  return {
+    foodName: result.food_category,
+    category: result.food_category,
+    freshnessScore: freshnessScore,
+    status: result.freshness_status,
+    confidence: result.confidence,
+    detectionConfidence: result.detection_confidence,
+    spoilageProbability: spoilageProbability,
+
+    visualAnalysis: {
+      colorCondition: "Analyzed by ML pipeline",
+      textureCondition: "Analyzed by ML pipeline",
+      surfaceCondition: "Analyzed by ML pipeline",
+      moldDetection:
+        result.rotten_regions > 0
+          ? "Possible spoilage regions detected"
+          : "No rotten regions detected",
+      bruising: "Analyzed by ML pipeline",
+      physicalDamage: "Analyzed by ML pipeline"
+    },
+
+    rottenRegions: result.rotten_regions,
+    rottenAreaPercent: result.rotten_area_percent,
+
+    imageId: result.image_id,
+    inventoryId: result.inventory_id,
+
+    remainingShelfLife: null
+  };
+},
   // Shelf Life Forecast
-  predictShelfLife: (params) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const tempScore = Math.max(0, 100 - Math.abs(params.temperature - 4) * 5);
-        const humScore = Math.max(0, 100 - Math.abs(params.humidity - 70) * 2);
-        
-        let multiplier = 1.0;
-        if (params.packagingType === "Vacuum Seal") multiplier = 1.6;
-        if (params.packagingType === "Sealed Plastic Bag") multiplier = 1.2;
-        if (params.packagingType === "Crate / Loose") multiplier = 0.8;
+  predictShelfLife: async (data) => {
 
-        const maxLife = {
-          "Fruits": 12, "Vegetables": 10, "Dairy Products": 14, "Meat & Poultry": 6,
-          "Seafood": 4, "Bakery Products": 5, "Packaged Foods": 30, "Beverages": 15
-        }[params.category] || 8;
+  const response = await fetch(
+    `${API_URL}/predict/shelf-life`,
+    {
+      method: "POST",
 
-        const factor = (tempScore * 0.6 + humScore * 0.4) / 100;
-        const remainingDays = Math.max(1, Math.round(maxLife * factor * multiplier));
-        const confidence = Math.floor(Math.random() * 8) + 88; // 88-96%
-        
-        let riskLevel = "Low";
-        if (remainingDays <= 2) riskLevel = "High";
-        else if (remainingDays <= 5) riskLevel = "Medium";
+      headers: {
+        "Content-Type": "application/json"
+      },
 
-        resolve({
-          remainingDays,
-          expiryDate: getRelativeDateString(remainingDays),
-          confidence,
-          riskLevel
-        });
-      }, 2000);
-    });
-  },
+      body: JSON.stringify(data)
+    }
+  );
 
+
+  if (!response.ok) {
+
+    let errorMessage =
+      "Shelf-life prediction failed.";
+
+    try {
+
+      const errorData =
+        await response.json();
+
+      errorMessage =
+        errorData.detail ||
+        errorData.error ||
+        errorMessage;
+
+    } catch (_) {}
+
+    throw new Error(
+      errorMessage
+    );
+  }
+
+
+  return await response.json();
+},
   // Sensors & Alerts
   getAlerts: () => {
     return new Promise((resolve) => {

@@ -27,3 +27,8 @@ backend/uploads/
 # ML demo generated outputs
 ml_model/debug_rotten_mask.png
 ml_model/outputs/
+
+# Environment variables
+.env
+.env.*
+!.env.example

@@ -1,408 +1,1551 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Food Details - FreshGuard</title>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Local CSS -->
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/dashboard.css" />
-    <link rel="stylesheet" href="css/forms.css" />
-    <link rel="stylesheet" href="css/responsive.css" />
-    
-    <style>
-      .details-grid-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-      }
-      @media (max-width: 900px) {
-        .details-grid-layout {
-          grid-template-columns: 1fr;
-        }
-      }
-      
-      .food-hero-img-card {
-        position: relative;
-        height: 250px;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        border: 1px solid var(--border-color);
-        margin-bottom: 1.5rem;
-      }
-      
-      .food-hero-img-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      
-      .food-hero-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(transparent, rgba(15, 23, 42, 0.7));
-        padding: 1.5rem 1.5rem 1rem;
-        color: white;
-      }
-      
-      .recommendation-list {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .recommendation-item {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        padding: 10px 12px;
-        border-radius: var(--radius-md);
-        background-color: var(--bg-app);
-        border-left: 4px solid var(--primary);
-      }
-      .recommendation-item.alert-item {
-        border-left-color: var(--near-spoilage);
-      }
-      .recommendation-item.danger-item {
-        border-left-color: var(--spoiled);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app-container">
-      <!-- Dynamic Sidebar Container -->
-      <div id="sidebar-container"></div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-      <!-- Main Wrapper -->
-      <div class="main-wrapper">
-        <!-- Dynamic Navbar Header -->
-        <header id="navbar-container"></header>
+<title>Food Details</title>
 
-        <!-- Main Body Content -->
-        <main class="content-body">
-          <div class="controls-bar" style="margin-bottom: 1.5rem;">
-            <button class="btn-fg btn-fg-secondary" onclick="window.location.href='inventory.html'">
-              <i class="fa-solid fa-arrow-left"></i> Back to Inventory
-            </button>
-            
-            <div style="display: flex; gap: 8px;">
-              <button class="btn-fg btn-fg-primary" id="scan-freshness-btn">
-                <i class="fa-solid fa-camera-retro"></i> Re-Analyze Freshness
-              </button>
-              <button class="btn-fg btn-fg-danger" id="delete-batch-btn">
-                <i class="fa-solid fa-trash-can"></i> Delete Batch
-              </button>
+<style>
+:root {
+    --bg: #050914;
+    --card: #0b111e;
+    --card2: #111a29;
+    --border: #202b3d;
+    --text: #f5f7fa;
+    --muted: #929caf;
+    --primary: #18dbea;
+    --fresh: #00d49a;
+    --warning: #ff9800;
+    --near: #ffc107;
+    --spoiled: #ff174f;
+    --good: #8b7cff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.header {
+    height: 110px;
+    background: #0d1422;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    gap: 20px;
+}
+
+.menu {
+    font-size: 28px;
+}
+
+.header-title {
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.header-search {
+    margin-left: auto;
+    width: 280px;
+    padding: 13px 18px;
+    border-radius: 25px;
+    background: #172131;
+    border: 1px solid #2b374b;
+    color: var(--muted);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 25px auto;
+    padding: 0 20px 60px;
+}
+
+.back {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    padding: 12px 18px;
+    background: #111827;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+}
+
+.food-image {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 18px;
+    background: #111827;
+}
+
+h1 {
+    font-size: 36px;
+    margin: 0 0 10px;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+.meta {
+    color: var(--muted);
+    margin-bottom: 20px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+.badge.fresh {
+    color: var(--fresh);
+    background: rgba(0,212,154,.15);
+}
+
+.badge.good {
+    color: var(--good);
+    background: rgba(139,124,255,.15);
+}
+
+.badge.warning {
+    color: var(--warning);
+    background: rgba(255,152,0,.15);
+}
+
+.badge.near {
+    color: var(--near);
+    background: rgba(255,193,7,.15);
+}
+
+.badge.spoiled {
+    color: var(--spoiled);
+    background: rgba(255,23,79,.15);
+}
+
+.badge.not-scanned {
+    color: var(--muted);
+    background: rgba(146,156,175,.15);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.info {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.label {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.value {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+button {
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.scan {
+    background: var(--primary);
+    color: #001017;
+}
+
+.delete {
+    background: var(--spoiled);
+    color: white;
+}
+
+.analysis {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    gap: 30px;
+    align-items: center;
+}
+
+.gauge {
+    width: 200px;
+    height: 200px;
+    position: relative;
+}
+
+.gauge svg {
+    width: 200px;
+    height: 200px;
+    transform: rotate(-90deg);
+}
+
+.gauge circle {
+    fill: none;
+    stroke-width: 13;
+}
+
+.gauge-bg {
+    stroke: #202a3a;
+}
+
+#gauge-value {
+    stroke: var(--primary);
+    stroke-linecap: round;
+    stroke-dasharray: 527.7;
+    stroke-dashoffset: 527.7;
+    transition: .7s ease;
+}
+
+.gauge-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.gauge-number {
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.recommendation {
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.recommendation:last-child {
+    border-bottom: none;
+}
+
+.danger-text {
+    color: #ff6b88;
+}
+
+.warning-text {
+    color: #ffc107;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 13px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+}
+
+th {
+    color: var(--muted);
+}
+
+#error-card {
+    display: none;
+    text-align: center;
+}
+
+.error-icon {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--spoiled);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35px;
+}
+
+@media(max-width: 800px) {
+
+    .hero,
+    .analysis {
+        grid-template-columns: 1fr;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-search {
+        display: none;
+    }
+
+    .food-image {
+        height: 220px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="menu">☰</div>
+    <div class="header-title">Food Freshness</div>
+    <div class="header-search">⌕ Search...</div>
+</header>
+
+<main class="container">
+
+<a href="inventory.html" class="back">
+    ← Back to Inventory
+</a>
+
+<div class="actions">
+
+    <button
+        id="scan-freshness-btn"
+        class="scan">
+        🔍 Re-Analyze Freshness
+    </button>
+
+    <button
+        id="delete-batch-btn"
+        class="delete">
+        🗑 Delete Batch
+    </button>
+
+</div>
+
+<section id="details-view-container">
+
+<div class="card hero">
+
+    <img
+        id="food-detail-img"
+        class="food-image"
+        src=""
+        alt="Food">
+
+    <div>
+
+        <h1 id="food-detail-name">
+            Loading...
+        </h1>
+
+        <div class="meta">
+            Batch:
+            <strong id="meta-batch">-</strong>
+            &nbsp; | &nbsp;
+            Category:
+            <strong id="meta-category">-</strong>
+        </div>
+
+        <span
+            id="food-detail-badge"
+            class="badge not-scanned">
+            Loading...
+        </span>
+
+        <div class="grid" style="margin-top:25px;">
+
+            <div class="info">
+                <div class="label">Quantity</div>
+                <div
+                    id="meta-quantity"
+                    class="value">
+                    -
+                </div>
             </div>
-          </div>
 
-          <!-- Error Alert if food not found -->
-          <div class="card-freshguard text-center" id="error-card" style="display: none; padding: 4rem 2rem;">
-            <i class="fa-solid fa-circle-exclamation text-spoiled" style="font-size: 3.5rem; margin-bottom: 1rem;"></i>
-            <h3 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.5rem;">Batch Record Not Found</h3>
-            <p class="text-muted" style="margin-bottom: 1.5rem;">The requested food item batch is either deleted or the URL parameter is invalid.</p>
-            <button class="btn-fg btn-fg-primary" onclick="window.location.href='inventory.html'">Go to Inventory</button>
-          </div>
-
-          <!-- Food Details Container -->
-          <div class="details-grid-layout" id="details-view-container">
-            <!-- Left Side: Profile & Environmental Parameters -->
-            <div>
-              <!-- Food Image Card -->
-              <div class="food-hero-img-card">
-                <img id="food-detail-img" src="https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=600" alt="Food Image">
-                <div class="food-hero-overlay">
-                  <span class="badge-status fresh" id="food-detail-badge" style="margin-bottom: 6px;">Fresh</span>
-                  <h3 id="food-detail-name" style="font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Fresh Fuji Apples</h3>
+            <div class="info">
+                <div class="label">Packaging</div>
+                <div
+                    id="meta-packaging"
+                    class="value">
+                    -
                 </div>
-              </div>
-
-              <!-- Metadata attributes -->
-              <div class="card-freshguard" style="margin-bottom: 1.5rem;">
-                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Product Information</h4>
-                <div class="details-metrics-grid" style="margin-top: 0;">
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Batch ID</span>
-                    <div class="metric-detail-value"><code id="meta-batch">AP501</code></div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Category</span>
-                    <div class="metric-detail-value" id="meta-category">Fruits</div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Quantity</span>
-                    <div class="metric-detail-value" id="meta-quantity">120 Units</div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Packaging Type</span>
-                    <div class="metric-detail-value" id="meta-packaging">Crate / Loose</div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Purchase Date</span>
-                    <div class="metric-detail-value" id="meta-purchase">2026-08-05</div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Storage Location</span>
-                    <div class="metric-detail-value" id="meta-location">Cold Storage A</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Environment parameters -->
-              <div class="card-freshguard">
-                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Storage Environmental Logs</h4>
-                <div class="details-metrics-grid" style="margin-top: 0;">
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Temperature</span>
-                    <div class="metric-detail-value"><i class="fa-solid fa-temperature-half text-muted"></i> <span id="env-temp">3.8°C</span></div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Humidity</span>
-                    <div class="metric-detail-value"><i class="fa-solid fa-droplet text-muted"></i> <span id="env-humidity">85%</span></div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Air Circulation</span>
-                    <div class="metric-detail-value"><i class="fa-solid fa-wind text-fresh"></i> <span id="env-air">Optimal</span></div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Light Exposure</span>
-                    <div class="metric-detail-value"><i class="fa-solid fa-sun text-warning"></i> <span id="env-light">None</span></div>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            <!-- Right Side: AI Freshness Analytics -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-              
-              <!-- Circular Freshness Gauge -->
-              <div class="card-freshguard text-center">
-                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.5rem;">Freshness Diagnostics</h4>
-                
-                <div class="score-circle-container">
-                  <svg class="score-circle-svg">
-                    <circle class="score-circle-bg" cx="90" cy="90" r="84"></circle>
-                    <circle class="score-circle-bar" id="details-score-circle" cx="90" cy="90" r="84"></circle>
-                  </svg>
-                  <div class="score-circle-text">
-                    <span class="score-circle-number" id="details-score-val">0%</span>
-                    <span class="score-circle-label">Freshness</span>
-                  </div>
+            <div class="info">
+                <div class="label">Manufacture Date</div>
+                <div
+                    id="meta-purchase"
+                    class="value">
+                    -
                 </div>
-
-                <div class="details-metrics-grid" style="margin-top: 1rem;">
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Spoilage Probability</span>
-                    <div class="metric-detail-value" id="ai-spoilage">4%</div>
-                  </div>
-                  <div class="metric-detail-item">
-                    <span class="metric-detail-label">Quality Score</span>
-                    <div class="metric-detail-value" id="ai-quality">92%</div>
-                  </div>
-                </div>
-
-                <div class="metric-detail-item" style="margin-top: 1rem; background-color: var(--bg-app);">
-                  <span class="metric-detail-label" style="display: block; margin-bottom: 0.5rem;">Estimated Remaining Shelf Life</span>
-                  <div class="metric-detail-value" style="font-size: 1.5rem; color: var(--primary);" id="ai-shelflife">10 Days</div>
-                </div>
-              </div>
-
-              <!-- Recommendation rules -->
-              <div class="card-freshguard">
-                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">AI Recommendations</h4>
-                <ul class="recommendation-list" id="recommendations-box">
-                  <!-- Injected dynamically -->
-                </ul>
-              </div>
-
-              <!-- Historical checkups -->
-              <div class="card-freshguard">
-                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Analysis Scanning History</h4>
-                <div class="fg-table-wrapper">
-                  <table class="fg-table" style="font-size: 0.8rem;">
-                    <thead>
-                      <tr>
-                        <th>Date Time</th>
-                        <th>Type</th>
-                        <th>Score</th>
-                        <th>Result</th>
-                      </tr>
-                    </thead>
-                    <tbody id="history-logs-body">
-                      <!-- Injected dynamically -->
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
             </div>
-          </div>
-        </main>
-      </div>
+
+            <div class="info">
+                <div class="label">Storage Location</div>
+                <div
+                    id="meta-location"
+                    class="value">
+                    -
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- Core Scripts -->
-    <script src="js/mock-data.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/main.js"></script>
-    
-    <script>
-      document.addEventListener("DOMContentLoaded", async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const foodId = urlParams.get('id');
+</div>
 
-        if (!foodId) {
-          showError();
-          return;
+
+<div class="card">
+
+<h2>Freshness Analysis</h2>
+
+<div class="analysis">
+
+    <div class="gauge">
+
+        <svg viewBox="0 0 200 200">
+
+            <circle
+                class="gauge-bg"
+                cx="100"
+                cy="100"
+                r="84">
+            </circle>
+
+            <circle
+                id="gauge-value"
+                cx="100"
+                cy="100"
+                r="84">
+            </circle>
+
+        </svg>
+
+        <div class="gauge-text">
+
+            <div
+                id="details-score-val"
+                class="gauge-number">
+                0.0%
+            </div>
+
+            <div style="color:var(--muted)">
+                Freshness
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="grid">
+
+        <div class="info">
+            <div class="label">
+                AI Predicted Food
+            </div>
+
+            <div
+                id="ai-food"
+                class="value">
+                -
+            </div>
+        </div>
+
+        <div class="info">
+            <div class="label">
+                AI Spoilage Probability
+            </div>
+
+            <div
+                id="ai-spoilage"
+                class="value">
+                -
+            </div>
+        </div>
+
+        <div class="info">
+            <div class="label">
+                AI Confidence
+            </div>
+
+            <div
+                id="ai-confidence"
+                class="value">
+                -
+            </div>
+        </div>
+
+        <div class="info">
+            <div class="label">
+                AI Quality Score
+            </div>
+
+            <div
+                id="ai-quality"
+                class="value">
+                -
+            </div>
+        </div>
+
+        <div class="info">
+            <div class="label">
+                Shelf Life Remaining
+            </div>
+
+            <div
+                id="ai-shelflife"
+                class="value">
+                -
+            </div>
+        </div>
+
+        <div class="info">
+            <div class="label">
+                Expiry Date
+            </div>
+
+            <div
+                id="meta-expiry"
+                class="value">
+                -
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>Storage Environment</h2>
+
+<div class="grid">
+
+    <div class="info">
+        <div class="label">Temperature</div>
+        <div id="env-temp" class="value">-</div>
+    </div>
+
+    <div class="info">
+        <div class="label">Humidity</div>
+        <div id="env-humidity" class="value">-</div>
+    </div>
+
+    <div class="info">
+        <div class="label">Air Circulation</div>
+        <div id="env-air" class="value">-</div>
+    </div>
+
+    <div class="info">
+        <div class="label">Light Exposure</div>
+        <div id="env-light" class="value">-</div>
+    </div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>Recommendations</h2>
+
+<div id="recommendations-box"></div>
+
+</div>
+
+
+<div class="card">
+
+<h2>Prediction History</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Date</th>
+<th>Analysis</th>
+<th>Freshness</th>
+<th>Status</th>
+</tr>
+
+</thead>
+
+<tbody id="history-logs-body"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+<section
+    id="error-card"
+    class="card">
+
+    <div class="error-icon">
+        !
+    </div>
+
+    <h2>
+        Food Item Not Found
+    </h2>
+
+    <p style="color:var(--muted)">
+        The requested inventory item could not be found.
+    </p>
+
+    <a
+        href="inventory.html"
+        class="back">
+        Go to Inventory
+    </a>
+
+</section>
+
+</main>
+
+
+<script>
+
+const BACKEND_URL =
+    "http://127.0.0.1:8000";
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    loadFoodDetails
+);
+
+
+async function loadFoodDetails() {
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const foodId =
+        params.get("id");
+
+
+    console.log(
+        "Food Details ID:",
+        foodId
+    );
+
+
+    if (!foodId) {
+
+        showError();
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${BACKEND_URL}/inventory/${encodeURIComponent(foodId)}`
+            );
+
+
+        console.log(
+            "Backend status:",
+            response.status
+        );
+
+
+        if (!response.ok) {
+
+            showError();
+
+            return;
         }
 
-        const foods = await API.getFoods();
-        const item = foods.find(f => f.id === foodId);
 
-        if (!item) {
-          showError();
-          return;
+        const item =
+            await response.json();
+
+
+        console.log(
+            "Inventory item:",
+            item
+        );
+
+
+        const normalized =
+            normalizeInventoryItem(item);
+
+
+        renderFoodDetails(
+            normalized
+        );
+
+
+        setupButtons(
+            normalized
+        );
+
+    }
+
+    catch(error) {
+
+        console.error(
+            "Food details error:",
+            error
+        );
+
+        showError();
+    }
+}
+
+
+function normalizeInventoryItem(item) {
+
+    const status =
+        item.freshness_status ||
+        "Not Scanned";
+
+
+    let confidence =
+        Number(
+            item.confidence ?? 0
+        );
+
+
+    confidence =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                confidence
+            )
+        );
+
+
+    let freshness = 0;
+
+
+    if (
+        status === "Fresh" ||
+        status === "Good" ||
+        status === "Acceptable"
+    ) {
+
+        freshness =
+            confidence * 100;
+    }
+
+    else if (
+        status === "Spoiled" ||
+        status === "Warning" ||
+        status === "Near Spoilage"
+    ) {
+
+        freshness =
+            (1 - confidence) * 100;
+    }
+
+
+    freshness =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                freshness
+            )
+        );
+
+
+    let shelfLife = 0;
+
+
+    if (item.expiry_date) {
+
+        const today =
+            new Date();
+
+        const expiry =
+            new Date(
+                item.expiry_date
+            );
+
+
+        today.setHours(
+            0,0,0,0
+        );
+
+        expiry.setHours(
+            0,0,0,0
+        );
+
+
+        shelfLife =
+            Math.max(
+                0,
+                Math.ceil(
+                    (
+                        expiry - today
+                    ) /
+                    86400000
+                )
+            );
+    }
+
+
+    let spoilageProbability = 0;
+
+
+    if (
+        status === "Spoiled" ||
+        status === "Warning" ||
+        status === "Near Spoilage"
+    ) {
+
+        spoilageProbability =
+            confidence * 100;
+    }
+
+
+    return {
+
+        id:
+            item.inventory_id,
+
+        name:
+            item.food_name ||
+            "Unknown Food",
+
+        category:
+            item.category ||
+            "Unknown",
+
+        predictedCategory:
+            item.predicted_food_category ||
+            "-",
+
+        batch:
+            item.batch_number ||
+            "-",
+
+        quantity:
+            item.quantity ??
+            0,
+
+        manufacture:
+            item.manufacture_date ||
+            "-",
+
+        expiry:
+            item.expiry_date ||
+            "-",
+
+        status:
+            status,
+
+        confidence:
+            confidence,
+
+        freshness:
+            freshness,
+
+        spoilageProbability:
+            spoilageProbability,
+
+        shelfLife:
+            shelfLife,
+
+        predictionDate:
+            item.prediction_date ||
+            null
+    };
+}
+
+
+function renderFoodDetails(item) {
+
+    setText(
+        "food-detail-name",
+        item.name
+    );
+
+
+    setText(
+        "meta-batch",
+        item.batch
+    );
+
+
+    setText(
+        "meta-category",
+        item.category
+    );
+
+
+    setText(
+        "meta-quantity",
+        `${item.quantity} Units`
+    );
+
+
+    setText(
+        "meta-packaging",
+        "Crate / Loose"
+    );
+
+
+    setText(
+        "meta-purchase",
+        formatDate(
+            item.manufacture
+        )
+    );
+
+
+    setText(
+        "meta-expiry",
+        formatDate(
+            item.expiry
+        )
+    );
+
+
+    setText(
+        "meta-location",
+        "Cold Storage A"
+    );
+
+
+    setText(
+        "env-temp",
+        "4°C"
+    );
+
+
+    setText(
+        "env-humidity",
+        "85%"
+    );
+
+
+    setText(
+        "env-air",
+        "Optimal"
+    );
+
+
+    setText(
+        "env-light",
+        "None"
+    );
+
+
+    setText(
+        "ai-food",
+        item.predictedCategory
+    );
+
+
+    setText(
+        "ai-spoilage",
+        `${item.spoilageProbability.toFixed(2)}%`
+    );
+
+
+    setText(
+        "ai-confidence",
+        `${(
+            item.confidence * 100
+        ).toFixed(2)}%`
+    );
+
+
+    setText(
+        "ai-quality",
+        `${item.freshness.toFixed(2)}%`
+    );
+
+
+    setText(
+        "ai-shelflife",
+        `${item.shelfLife} Days`
+    );
+
+
+    setText(
+        "details-score-val",
+        `${item.freshness.toFixed(2)}%`
+    );
+
+
+    const badge =
+        document.getElementById(
+            "food-detail-badge"
+        );
+
+
+    badge.textContent =
+        item.status;
+
+
+    badge.className =
+        "badge " +
+        getStatusClass(
+            item.status
+        );
+
+
+    const circle =
+        document.getElementById(
+            "gauge-value"
+        );
+
+
+    const circumference =
+        527.7;
+
+
+    const offset =
+        circumference -
+        (
+            item.freshness / 100
+        ) *
+        circumference;
+
+
+    circle.style.strokeDashoffset =
+        offset;
+
+
+    if (
+        item.status ===
+        "Spoiled"
+    ) {
+
+        circle.style.stroke =
+            "var(--spoiled)";
+    }
+
+    else if (
+        item.status ===
+        "Warning"
+    ) {
+
+        circle.style.stroke =
+            "var(--warning)";
+    }
+
+    else if (
+        item.status ===
+        "Near Spoilage"
+    ) {
+
+        circle.style.stroke =
+            "var(--near)";
+    }
+
+    else {
+
+        circle.style.stroke =
+            "var(--fresh)";
+    }
+
+
+    const image =
+        document.getElementById(
+            "food-detail-img"
+        );
+
+
+    image.src =
+        getFoodImage(
+            item.name,
+            item.category
+        );
+
+
+    renderRecommendations(
+        item
+    );
+
+
+    renderHistory(
+        item
+    );
+}
+
+
+function getFoodImage(
+    name,
+    category
+) {
+
+    const n =
+        name.toLowerCase();
+
+
+    if (n.includes("apple")) {
+
+        return "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=800&q=80";
+    }
+
+
+    if (n.includes("banana")) {
+
+        return "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=800&q=80";
+    }
+
+
+    const images = {
+
+        "Fruits":
+        "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&w=800&q=80",
+
+        "Vegetables":
+        "https://images.unsplash.com/photo-1566393028639-d108a42c46a7?auto=format&fit=crop&w=800&q=80",
+
+        "Dairy Products":
+        "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=800&q=80",
+
+        "Meat & Poultry":
+        "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=800&q=80",
+
+        "Seafood":
+        "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80"
+    };
+
+
+    return (
+        images[category] ||
+        images["Fruits"]
+    );
+}
+
+
+function renderRecommendations(item) {
+
+    const box =
+        document.getElementById(
+            "recommendations-box"
+        );
+
+
+    let html = "";
+
+
+    if (
+        item.status ===
+        "Spoiled"
+    ) {
+
+        html += `
+            <div class="recommendation danger-text">
+                ⚠️ Food item is classified as spoiled.
+                Do not use for consumption.
+            </div>
+
+            <div class="recommendation danger-text">
+                🗑 Remove this batch from fresh inventory.
+            </div>
+
+            <div class="recommendation">
+                🤖 AI confidence:
+                ${(item.confidence * 100).toFixed(2)}%
+            </div>
+        `;
+    }
+
+    else if (
+        item.status ===
+        "Not Scanned"
+    ) {
+
+        html += `
+            <div class="recommendation warning-text">
+                📷 This item has not been scanned by the AI model.
+            </div>
+
+            <div class="recommendation">
+                🤖 Click Re-Analyze Freshness to scan this item.
+            </div>
+        `;
+    }
+
+    else if (
+        item.status ===
+        "Near Spoilage"
+    ) {
+
+        html += `
+            <div class="recommendation warning-text">
+                ⚠️ Food is approaching spoilage.
+                Prioritize this batch.
+            </div>
+
+            <div class="recommendation">
+                ❄️ Maintain recommended storage conditions.
+            </div>
+        `;
+    }
+
+    else {
+
+        html += `
+            <div class="recommendation">
+                ✅ Food quality is currently acceptable.
+            </div>
+
+            <div class="recommendation">
+                ❄️ Continue maintaining recommended storage conditions.
+            </div>
+        `;
+    }
+
+
+    box.innerHTML =
+        html;
+}
+
+
+function renderHistory(item) {
+
+    const body =
+        document.getElementById(
+            "history-logs-body"
+        );
+
+
+    if (!item.predictionDate) {
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="4"
+                    style="text-align:center;color:var(--muted)">
+                    No AI prediction history available.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    body.innerHTML = `
+        <tr>
+
+            <td>
+                ${formatDateTime(
+                    item.predictionDate
+                )}
+            </td>
+
+            <td>
+                AI Freshness
+            </td>
+
+            <td>
+                ${item.freshness.toFixed(2)}%
+            </td>
+
+            <td>
+                <span class="badge ${getStatusClass(item.status)}">
+                    ${item.status}
+                </span>
+            </td>
+
+        </tr>
+    `;
+}
+
+
+function setupButtons(item) {
+
+    const scan =
+        document.getElementById(
+            "scan-freshness-btn"
+        );
+
+
+    if (scan) {
+
+        scan.addEventListener(
+            "click",
+            () => {
+
+                window.location.href =
+                    `freshness-analysis.html?inventory_id=${encodeURIComponent(item.id)}&category=${encodeURIComponent(item.category)}&name=${encodeURIComponent(item.name)}`;
+            }
+        );
+    }
+
+
+    const deleteButton =
+        document.getElementById(
+            "delete-batch-btn"
+        );
+
+
+    if (deleteButton) {
+
+        deleteButton.addEventListener(
+            "click",
+            async () => {
+
+                const confirmDelete =
+                    confirm(
+                        `Delete "${item.name}" batch ${item.batch}?`
+                    );
+
+
+                if (!confirmDelete) {
+
+                    return;
+                }
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${BACKEND_URL}/inventory/${item.id}`,
+                            {
+                                method:
+                                    "DELETE"
+                            }
+                        );
+
+
+                    if (!response.ok) {
+
+                        const data =
+                            await response.json()
+                                .catch(
+                                    () => ({})
+                                );
+
+                        throw new Error(
+                            data.error ||
+                            data.detail ||
+                            "Delete failed"
+                        );
+                    }
+
+
+                    alert(
+                        "Record deleted successfully."
+                    );
+
+
+                    window.location.href =
+                        "inventory.html";
+
+                }
+
+                catch(error) {
+
+                    console.error(
+                        error
+                    );
+
+                    alert(
+                        "Delete failed: " +
+                        error.message
+                    );
+                }
+            }
+        );
+    }
+}
+
+
+function getStatusClass(status) {
+
+    switch(status) {
+
+        case "Fresh":
+            return "fresh";
+
+        case "Good":
+            return "good";
+
+        case "Warning":
+            return "warning";
+
+        case "Near Spoilage":
+            return "near";
+
+        case "Spoiled":
+            return "spoiled";
+
+        default:
+            return "not-scanned";
+    }
+}
+
+
+function formatDate(value) {
+
+    if (!value) {
+
+        return "-";
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return value;
+    }
+
+
+    return date.toLocaleDateString(
+        "en-IN",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
         }
+    );
+}
 
-        // Render food profile details
-        renderFoodDetails(item);
 
-        // Bind scan redirection
-        document.getElementById("scan-freshness-btn").addEventListener("click", () => {
-          window.location.href = `freshness-analysis.html?category=${encodeURIComponent(item.category)}&name=${encodeURIComponent(item.name)}`;
-        });
+function formatDateTime(value) {
 
-        // Bind delete action
-        document.getElementById("delete-batch-btn").addEventListener("click", async () => {
-          if (confirm(`Are you sure you want to delete the food record "${item.name}"?`)) {
-            await API.deleteFood(item.id);
-            alert("Record deleted successfully.");
-            window.location.href = "inventory.html";
-          }
-        });
-      });
+    if (!value) {
 
-      function showError() {
-        document.getElementById("details-view-container").style.display = "none";
-        document.getElementById("error-card").style.display = "block";
-      }
+        return "Not scanned";
+    }
 
-      const CATEGORY_IMAGE_URLS = {
-        "Fruits": "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&q=80&w=600",
-        "Vegetables": "https://images.unsplash.com/photo-1566393028639-d108a42c46a7?auto=format&fit=crop&q=80&w=600",
-        "Dairy Products": "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=600",
-        "Meat & Poultry": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&q=80&w=600",
-        "Seafood": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=600",
-        "Bakery Products": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=600",
-        "Packaged Foods": "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600",
-        "Beverages": "https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&q=80&w=600"
-      };
 
-      function renderFoodDetails(item) {
-        // Set metadata elements
-        document.getElementById("food-detail-name").textContent = item.name;
-        document.getElementById("meta-batch").textContent = item.batchId;
-        document.getElementById("meta-category").textContent = item.category;
-        document.getElementById("meta-quantity").textContent = `${item.quantity} Units`;
-        document.getElementById("meta-packaging").textContent = item.packagingType || "Crate / Loose";
-        document.getElementById("meta-purchase").textContent = item.purchaseDate;
-        document.getElementById("meta-location").textContent = item.storageLocation;
+    const normalized =
+        String(value)
+            .replace(" ", "T");
 
-        document.getElementById("env-temp").textContent = `${item.temperature}°C`;
-        document.getElementById("env-humidity").textContent = `${item.humidity}%`;
-        document.getElementById("env-air").textContent = item.airCirculation || "Optimal";
-        document.getElementById("env-light").textContent = item.lightExposure || "None";
 
-        document.getElementById("ai-spoilage").textContent = `${item.spoilageProbability}%`;
-        document.getElementById("ai-quality").textContent = `${item.qualityScore}%`;
-        document.getElementById("ai-shelflife").textContent = `${item.shelfLifeRemainingDays} Days`;
+    const date =
+        new Date(
+            normalized
+        );
 
-        // Apply Image based on category or custom mock
-        const fallbackImg = CATEGORY_IMAGE_URLS[item.category] || CATEGORY_IMAGE_URLS["Packaged Foods"];
-        document.getElementById("food-detail-img").src = fallbackImg;
 
-        // Apply badge status
-        const badge = document.getElementById("food-detail-badge");
-        badge.textContent = item.status;
-        badge.className = `badge-status ${item.status.toLowerCase().replace(" ", "-")}`;
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
 
-        // Circular score animation
-        document.getElementById("details-score-val").textContent = `${item.freshnessScore}%`;
-        
-        // Circular progress circle logic
-        setTimeout(() => {
-          const circle = document.getElementById("details-score-circle");
-          if (circle) {
-            // Formula: dashoffset = strokeDashArray - (score / 100) * strokeDashArray
-            const maxVal = 527.7;
-            const offset = maxVal - (item.freshnessScore / 100) * maxVal;
-            circle.style.strokeDashoffset = offset;
-            
-            // Set circle stroke color dynamically
-            if (item.freshnessScore >= 80) circle.style.stroke = "var(--primary)";
-            else if (item.freshnessScore >= 65) circle.style.stroke = "var(--warning)";
-            else if (item.freshnessScore >= 50) circle.style.stroke = "var(--near-spoilage)";
-            else circle.style.stroke = "var(--spoiled)";
-          }
-        }, 100);
+        return value;
+    }
 
-        // Render AI Recommendations
-        const recsBox = document.getElementById("recommendations-box");
-        let recItems = [];
 
-        if (item.status === "Fresh") {
-          recItems.push({ icon: "fa-circle-check", text: "Storage conditions are optimal. Maintain current settings.", alert: false });
-          recItems.push({ icon: "fa-circle-info", text: "Product is highly stable. Fit for normal supply chain distribution.", alert: false });
-        } else if (item.status === "Warning") {
-          recItems.push({ icon: "fa-triangle-exclamation", text: "Average storage temperature fluctuated slightly. Audit sensor logs.", alert: true });
-          recItems.push({ icon: "fa-hourglass", text: "Shelf life decreases rapidly if stored outside refrigerator. Consume within 2 days.", alert: true });
-        } else if (item.status === "Near Spoilage") {
-          recItems.push({ icon: "fa-circle-exclamation", text: "Item is approaching expiry. Relocate immediately to checkout/markdown rack.", alert: true });
-          recItems.push({ icon: "fa-snowflake", text: "Lower zone storage temperature by 1.5°C to retard metabolic respiration.", alert: true });
-        } else if (item.status === "Spoiled") {
-          recItems.push({ icon: "fa-skull-crossbones", text: "Discard immediately. Mold or decay spores present visual health hazard.", alert: false, danger: true });
-          recItems.push({ icon: "fa-circle-xmark", text: "Flag batch code in audit register. Clean storage shelves to prevent cross-contamination.", alert: false, danger: true });
+    return date.toLocaleString(
+        "en-IN",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
         }
+    );
+}
 
-        recsBox.innerHTML = recItems.map(rec => {
-          let itemClass = "";
-          if (rec.alert) itemClass = "alert-item";
-          else if (rec.danger) itemClass = "danger-item";
-          
-          let iconColor = "var(--primary)";
-          if (rec.alert) iconColor = "var(--near-spoilage)";
-          else if (rec.danger) iconColor = "var(--spoiled)";
 
-          return `
-            <li class="recommendation-item ${itemClass}">
-              <i class="fa-solid ${rec.icon}" style="color: ${iconColor}; font-size: 1.15rem; margin-top: 2px;"></i>
-              <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-main);">${rec.text}</span>
-            </li>
-          `;
-        }).join("");
+function setText(
+    id,
+    value
+) {
 
-        // Analysis logs rendering
-        const logBody = document.getElementById("history-logs-body");
-        
-        // Generate mock analysis checks
-        const mockLogs = [
-          { date: item.purchaseDate + " 09:30 AM", type: "Visual AI scan", score: `${item.freshnessScore}%`, result: item.status },
-          { date: item.purchaseDate + " 09:15 AM", type: "Storage compliance check", score: `${Math.min(100, item.freshnessScore + 2)}%`, result: "Optimal" }
-        ];
+    const element =
+        document.getElementById(
+            id
+        );
 
-        logBody.innerHTML = mockLogs.map(log => `
-          <tr>
-            <td>${log.date}</td>
-            <td>${log.type}</td>
-            <td style="font-weight: 600;">${log.score}</td>
-            <td><span class="badge-status ${log.result.toLowerCase().replace(" ", "-")}">${log.result}</span></td>
-          </tr>
-        `).join("");
-      }
-    </script>
-  </body>
+
+    if (element) {
+
+        element.textContent =
+            value ?? "-";
+    }
+}
+
+
+function showError() {
+
+    const details =
+        document.getElementById(
+            "details-view-container"
+        );
+
+    const error =
+        document.getElementById(
+            "error-card"
+        );
+
+
+    if (details) {
+
+        details.style.display =
+            "none";
+    }
+
+
+    if (error) {
+
+        error.style.display =
+            "block";
+    }
+}
+
+</script>
+
+</body>
 </html>
