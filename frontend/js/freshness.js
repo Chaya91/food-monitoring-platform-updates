@@ -110,8 +110,15 @@ document.addEventListener("DOMContentLoaded", () => {
         details.productAgeScore = 15;
       }
 
-      const report = await API.analyzeFreshness(category, foodName, details);
-      currentAnalysisReport = report;
+      const file = fileInput.files[0];
+
+if (!file) {
+  throw new Error("Please upload a food image.");
+}
+
+const inventoryId = 1;
+
+const report = await API.analyzeFreshness(file, inventoryId);
 
       // Render Results
       document.getElementById("res-food-title").textContent = `${report.foodName} Scan`;
