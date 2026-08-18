@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .profile-card-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      @media (max-width: 768px) {
+        .profile-card-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      .profile-avatar-block {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .profile-avatar-img {
+        width: 130px;
+        height: 130px;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+        border: 4px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <div class="profile-card-layout">
+            <!-- Left Panel: Avatar & Role Tag -->
+            <div class="card-freshguard profile-avatar-block animate-fade-in">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" alt="Profile Avatar" class="profile-avatar-img">
+              <h3 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 4px;" id="avatar-user-name">Prajwal Raju</h3>
+              <span class="badge-status fresh" id="avatar-user-role" style="font-size: 0.72rem;">Administrator</span>
+              
+              <button class="btn-fg btn-fg-secondary" style="margin-top: 1.5rem; width: 100%; font-size: 0.8rem;" onclick="alert('Avatar file upload simulation triggered. Select a visual image from your desktop.')">
+                <i class="fa-solid fa-camera"></i> Change Photo
+              </button>
+            </div>
+
+            <!-- Right Panel: Profile settings and Password updates -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              
+              <!-- Profile Fields Card -->
+              <div class="card-freshguard animate-fade-in">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Account Information</h4>
+                
+                <form id="profile-edit-form">
+                  <div class="form-group-fg">
+                    <label for="prof-name">Full Name</label>
+                    <input type="text" id="prof-name" class="input-fg" required value="Prajwal Raju" />
+                  </div>
+
+                  <div class="form-group-fg">
+                    <label for="prof-email">Email Address</label>
+                    <input type="email" id="prof-email" class="input-fg" required value="admin@freshguard.com" autocomplete="username" />
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group-fg">
+                      <label for="prof-phone">Phone Number</label>
+                      <input type="tel" id="prof-phone" class="input-fg" required value="+91 98765 43210" />
+                    </div>
+                    <div class="form-group-fg">
+                      <label for="prof-role">Active Role (Read-only)</label>
+                      <input type="text" id="prof-role" class="input-fg" disabled value="Administrator" />
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn-fg btn-fg-primary" style="margin-top: 0.5rem; width: 150px;">
+                    Save Profile
+                  </button>
+                </form>
+              </div>
+
+              <!-- Change password card -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Security Credentials</h4>
+                
+                <form id="profile-password-form">
+                  <div class="form-group-fg">
+                    <label for="pass-current">Current Password</label>
+                    <input type="password" id="pass-current" class="input-fg" required placeholder="••••••••" autocomplete="current-password" />
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group-fg">
+                      <label for="pass-new">New Password</label>
+                      <input type="password" id="pass-new" class="input-fg" required placeholder="••••••••" autocomplete="new-password" />
+                    </div>
+                    <div class="form-group-fg">
+                      <label for="pass-confirm">Confirm New Password</label>
+                      <input type="password" id="pass-confirm" class="input-fg" required placeholder="••••••••" autocomplete="new-password" />
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn-fg btn-fg-secondary" style="margin-top: 0.5rem; width: 170px;">
+                    Change Password
+                  </button>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const user = MockStore.getCurrentUser();
+        if (!user) return;
+
+        // Populate elements
+        document.getElementById("avatar-user-name").textContent = user.name;
+        document.getElementById("avatar-user-role").textContent = user.role;
+        document.getElementById("prof-name").value = user.name;
+        document.getElementById("prof-email").value = user.email;
+        document.getElementById("prof-role").value = user.role;
+
+        // Set phone default
+        const phoneMap = {
+          "admin@freshguard.com": "+91 98765 43210",
+          "manager@freshguard.com": "+1 415 555 2671",
+          "warehouse@freshguard.com": "+1 312 555 8899",
+          "consumer@freshguard.com": "+44 20 7946 0958",
+          "inspector@freshguard.com": "+91 94440 12345"
+        };
+        document.getElementById("prof-phone").value = phoneMap[user.email] || "+91 98765 43210";
+
+        // Bind profile save
+        document.getElementById("profile-edit-form").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const name = document.getElementById("prof-name").value.trim();
+          const email = document.getElementById("prof-email").value.trim();
+
+          const success = Auth.updateProfile({ name, email });
+          if (success) {
+            alert("Account information updated successfully. Reloading view.");
+            window.location.reload();
+          } else {
+            alert("Save failed.");
+          }
+        });
+
+        // Bind password change
+        document.getElementById("profile-password-form").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const oldPass = document.getElementById("pass-current").value;
+          const newPass = document.getElementById("pass-new").value;
+          const confirmPass = document.getElementById("pass-confirm").value;
+
+          if (newPass.length < 6) {
+            alert("New password must be at least 6 characters long.");
+            return;
+          }
+
+          if (newPass !== confirmPass) {
+            alert("Confirm password does not match new password.");
+            return;
+          }
+
+          alert("Password updated successfully.");
+          document.getElementById("profile-password-form").reset();
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,153 @@
+/* Responsive Layout System & Drawer Overlays */
+
+/* Sidebar overlay backdrop for mobile navigation drawer */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(3, 7, 18, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+  display: none;
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+@media (max-width: 992px) {
+  /* Reset floating sidebar into a full height overlay drawer */
+  .sidebar {
+    transform: translateX(-100%);
+    margin: 0;
+    height: 100vh;
+    border-radius: 0;
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+    background-color: var(--bg-glass-solid);
+  }
+  
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  
+  .main-wrapper {
+    margin-left: 0;
+  }
+  
+  .menu-toggle-btn {
+    display: block;
+  }
+  
+  .top-navbar {
+    margin: 0;
+    border-radius: 0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    padding: 0 1.25rem;
+    top: 0;
+  }
+  
+  .content-body {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-bar-container {
+    width: 100%;
+    margin-bottom: 0.75rem;
+    order: 3; /* Push down on flex-wrap */
+  }
+  
+  .top-navbar {
+    height: auto;
+    padding: 0.75rem 1.25rem;
+    flex-wrap: wrap;
+  }
+  
+  .navbar-right {
+    width: auto;
+    gap: 0.75rem;
+  }
+  
+  .nav-user-info {
+    display: none; /* Hide text, keep avatar icon */
+  }
+  
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .details-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .controls-filters {
+    width: 100%;
+  }
+  
+  .controls-filters .input-fg,
+  .controls-filters select {
+    flex: 1;
+  }
+}
+
+@media (max-width: 576px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .shelf-life-timeline {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+    padding-left: 2rem;
+  }
+  
+  .shelf-life-timeline::before {
+    top: 0;
+    bottom: 0;
+    left: 25px;
+    width: 4px;
+    height: auto;
+  }
+  
+  .timeline-step {
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .timeline-label {
+    margin-top: 0;
+  }
+  
+  .score-circle-container {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .score-circle-svg {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .score-circle-bar {
+    stroke-dasharray: 439.8; /* 2 * pi * 70 */
+    stroke-dashoffset: 439.8;
+  }
+  
+  .score-circle-number {
+    font-size: 1.75rem;
+  }
+}

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--bg-app);
+        padding: 1.5rem;
+      }
+      .login-container {
+        width: 100%;
+        max-width: 420px;
+        animation: fadeIn 0.4s ease forwards;
+      }
+      .brand-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .brand-header h1 {
+        font-family: var(--font-heading);
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--primary);
+        letter-spacing: -0.03em;
+        margin-bottom: 0.25rem;
+      }
+      .brand-header p {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+      }
+      .login-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+      }
+      .login-footer a {
+        color: var(--secondary);
+        font-weight: 600;
+      }
+      .login-footer a:hover {
+        text-decoration: underline;
+      }
+      .alert-error {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--spoiled);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        margin-bottom: 1.25rem;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+      .social-divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .social-divider::before, .social-divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .social-divider:not(:empty)::before {
+        margin-right: .5em;
+      }
+      .social-divider:not(:empty)::after {
+        margin-left: .5em;
+      }
+      .credential-helper {
+        margin-top: 1.5rem;
+        background-color: var(--bg-card);
+        border: 1px dashed var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        font-size: 0.78rem;
+      }
+      .credential-helper h4 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-main);
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+      }
+      .credential-helper ul {
+        list-style: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 12px;
+      }
+      .credential-helper li {
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+      .credential-helper li:hover {
+        background-color: var(--bg-input);
+        color: var(--text-main);
+      }
+      .credential-helper strong {
+        color: var(--text-main);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="brand-header">
+        <h1>FreshGuard</h1>
+        <p>AI-Powered Food Freshness Monitoring</p>
+      </div>
+
+      <div class="card-freshguard">
+        <div class="alert-error" id="login-error-alert">
+          <i class="fa-solid fa-circle-xmark"></i>
+          <span id="login-error-msg">Incorrect credentials.</span>
+        </div>
+
+        <form id="login-form">
+          <div class="form-group-fg">
+            <label for="email-field">Email Address</label>
+            <input type="email" id="email-field" class="input-fg" placeholder="email@freshguard.com" required autocomplete="username" />
+          </div>
+
+          <div class="form-group-fg">
+            <label for="password-field">Password</label>
+            <input type="password" id="password-field" class="input-fg" placeholder="••••••••" required autocomplete="current-password" />
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.85rem;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-muted);">
+              <input type="checkbox" style="accent-color: var(--primary);" id="remember-me-checkbox" />
+              Remember me
+            </label>
+            <a href="#" style="color: var(--secondary); font-weight: 500;" onclick="alert('This demo allows logging in with the helper credentials below. In case of lost password, please contact the platform administrator.')">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn-fg btn-fg-primary" style="width: 100%; height: 42px;">
+            Sign In <i class="fa-solid fa-right-to-bracket"></i>
+          </button>
+        </form>
+
+        <div class="social-divider">Or continue with</div>
+
+        <button type="button" class="btn-fg btn-fg-secondary" style="width: 100%; border-color: #d1d5db; height: 42px;" onclick="simulateGoogleLogin()">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 18px; height: 18px; margin-right: 8px;" />
+          Google Workspace
+        </button>
+
+        <!-- Prepopulated Helper accounts -->
+        <div class="credential-helper">
+          <h4>Demo Accounts (Click to Fill)</h4>
+          <ul>
+            <li onclick="fillCreds('admin@freshguard.com', 'admin123')">
+              <strong>Admin:</strong><br>admin@freshguard.com
+            </li>
+            <li onclick="fillCreds('manager@freshguard.com', 'manager123')">
+              <strong>Manager:</strong><br>manager@freshguard.com
+            </li>
+            <li onclick="fillCreds('warehouse@freshguard.com', 'warehouse123')">
+              <strong>Warehouse:</strong><br>warehouse@freshguard.com
+            </li>
+            <li onclick="fillCreds('consumer@freshguard.com', 'consumer123')">
+              <strong>Consumer:</strong><br>consumer@freshguard.com
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="login-footer">
+        Don't have an account? <a href="register.html">Create account</a>
+      </div>
+    </div>
+
+    <!-- JS Files -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      // Fill credentials utility
+      function fillCreds(email, password) {
+        document.getElementById('email-field').value = email;
+        document.getElementById('password-field').value = password;
+        document.getElementById('login-error-alert').style.display = 'none';
+      }
+
+      // Handle submission
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-field').value;
+        const password = document.getElementById('password-field').value;
+        const errorAlert = document.getElementById('login-error-alert');
+        const errorMsg = document.getElementById('login-error-msg');
+
+        try {
+          errorAlert.style.display = 'none';
+          await Auth.login(email, password);
+        } catch (err) {
+          errorMsg.textContent = err.message;
+          errorAlert.style.display = 'flex';
+        }
+      });
+
+      // Google Sign-In Simulation
+      function simulateGoogleLogin() {
+        // Log in as manager for Google simulation
+        fillCreds('manager@freshguard.com', 'manager123');
+        document.getElementById('login-form').dispatchEvent(new Event('submit'));
+      }
+    </script>
+  </body>
+</html>

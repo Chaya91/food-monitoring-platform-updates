@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--bg-app);
+        padding: 2.5rem 1.5rem;
+      }
+      .register-container {
+        width: 100%;
+        max-width: 500px;
+        animation: fadeIn 0.4s ease forwards;
+      }
+      .brand-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+      .brand-header h1 {
+        font-family: var(--font-heading);
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--primary);
+        letter-spacing: -0.03em;
+        margin-bottom: 0.25rem;
+      }
+      .brand-header p {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+      }
+      .register-footer {
+        text-align: center;
+        margin-top: 1.25rem;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+      }
+      .register-footer a {
+        color: var(--secondary);
+        font-weight: 600;
+      }
+      .register-footer a:hover {
+        text-decoration: underline;
+      }
+      .alert-error {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--spoiled);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        margin-bottom: 1.25rem;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="register-container">
+      <div class="brand-header">
+        <h1>FreshGuard</h1>
+        <p>AI-Powered Food Freshness Monitoring</p>
+      </div>
+
+      <div class="card-freshguard">
+        <div class="alert-error" id="register-error-alert">
+          <i class="fa-solid fa-circle-xmark"></i>
+          <span id="register-error-msg">Please correct form errors.</span>
+        </div>
+
+        <form id="register-form">
+          <div class="form-group-fg">
+            <label for="name-field">Full Name</label>
+            <input type="text" id="name-field" class="input-fg" placeholder="Prajwal Raju" required />
+          </div>
+
+          <div class="form-group-fg">
+            <label for="email-field">Email Address</label>
+            <input type="email" id="email-field" class="input-fg" placeholder="email@freshguard.com" required autocomplete="username" />
+          </div>
+
+          <div class="form-group-fg">
+            <label for="phone-field">Phone Number</label>
+            <input type="tel" id="phone-field" class="input-fg" placeholder="+91 98765 43210" required />
+          </div>
+
+          <div class="form-group-fg">
+            <label for="role-field">Account Role</label>
+            <select id="role-field" class="input-fg" required style="padding-right: 2rem;">
+              <option value="" disabled selected>Select your platform role...</option>
+              <option value="Consumer">Consumer</option>
+              <option value="Retail Manager">Retail Manager</option>
+              <option value="Warehouse Operator">Warehouse Operator</option>
+              <option value="Food Quality Inspector">Food Quality Inspector</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group-fg">
+              <label for="password-field">Password</label>
+              <input type="password" id="password-field" class="input-fg" placeholder="••••••••" required autocomplete="new-password" />
+            </div>
+            <div class="form-group-fg">
+              <label for="confirm-field">Confirm Password</label>
+              <input type="password" id="confirm-field" class="input-fg" placeholder="••••••••" required autocomplete="new-password" />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 0.82rem; color: var(--text-muted);">
+              <input type="checkbox" style="accent-color: var(--primary); margin-top: 3px;" required />
+              <span>I agree to the FreshGuard Terms of Service and Privacy Policy, including automatic sensor telemetry logging.</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-fg btn-fg-primary" style="width: 100%; height: 42px;">
+            Create Account <i class="fa-solid fa-user-plus"></i>
+          </button>
+        </form>
+      </div>
+
+      <div class="register-footer">
+        Already have an account? <a href="login.html">Back to Login</a>
+      </div>
+    </div>
+
+    <!-- JS Files -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const fullName = document.getElementById('name-field').value.trim();
+        const email = document.getElementById('email-field').value.trim();
+        const phone = document.getElementById('phone-field').value.trim();
+        const role = document.getElementById('role-field').value;
+        const password = document.getElementById('password-field').value;
+        const confirmPassword = document.getElementById('confirm-field').value;
+        
+        const errorAlert = document.getElementById('register-error-alert');
+        const errorMsg = document.getElementById('register-error-msg');
+
+        errorAlert.style.display = 'none';
+
+        // Custom Validation
+        if (password.length < 6) {
+          errorMsg.textContent = "Password must be at least 6 characters long.";
+          errorAlert.style.display = 'flex';
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          errorMsg.textContent = "Passwords do not match.";
+          errorAlert.style.display = 'flex';
+          return;
+        }
+
+        // Phone format validation check
+        const phoneRegex = /^\+?[0-9\s\-()]{8,20}$/;
+        if (!phoneRegex.test(phone)) {
+          errorMsg.textContent = "Please enter a valid phone number.";
+          errorAlert.style.display = 'flex';
+          return;
+        }
+
+        try {
+          await Auth.register({
+            fullName,
+            email,
+            phone,
+            role,
+            password
+          });
+        } catch (err) {
+          errorMsg.textContent = err.message;
+          errorAlert.style.display = 'flex';
+        }
+      });
+    </script>
+  </body>
+</html>

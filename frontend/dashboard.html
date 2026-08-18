@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- ChartJS via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <style>
+      .welcome-header {
+        margin-bottom: 2rem;
+        animation: fadeIn 0.3s ease;
+      }
+      .welcome-header h3 {
+        font-family: var(--font-heading);
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 0.25rem;
+      }
+      .welcome-header p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+      .dashboard-layout-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+      }
+      @media (max-width: 1100px) {
+        .dashboard-layout-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <div class="welcome-header">
+            <h3 id="welcome-title">Good Morning, Prajwal</h3>
+            <p>Here's your food freshness overview.</p>
+          </div>
+
+          <!-- Enterprise Stats Overview -->
+          <div class="stats-row animate-fade-in">
+            <!-- Total Food Items -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(99, 102, 241, 0.1); color: var(--secondary);">
+                <i class="fa-solid fa-boxes-stacked"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val" id="stat-total-items">0</span>
+                <span class="stat-card-label">Total Items</span>
+              </div>
+            </div>
+
+            <!-- Fresh Items -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(16, 185, 129, 0.1); color: var(--primary);">
+                <i class="fa-solid fa-seedling"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val text-fresh" id="stat-fresh-items">0</span>
+                <span class="stat-card-label">Fresh Items</span>
+              </div>
+            </div>
+
+            <!-- Near Spoilage -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(249, 115, 22, 0.1); color: var(--near-spoilage);">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val text-near-spoilage" id="stat-warning-items">0</span>
+                <span class="stat-card-label">Near Spoilage</span>
+              </div>
+            </div>
+
+            <!-- Spoiled Items -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(239, 68, 68, 0.1); color: var(--spoiled);">
+                <i class="fa-solid fa-skull-crossbones"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val text-spoiled" id="stat-spoiled-items">0</span>
+                <span class="stat-card-label">Spoiled Items</span>
+              </div>
+            </div>
+
+            <!-- Avg Freshness Score -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(16, 185, 129, 0.1); color: var(--primary);">
+                <i class="fa-solid fa-percent"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val" id="stat-avg-freshness">0%</span>
+                <span class="stat-card-label">Avg Freshness</span>
+              </div>
+            </div>
+
+            <!-- Avg Shelf Life -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(234, 179, 8, 0.1); color: var(--warning);">
+                <i class="fa-solid fa-hourglass-half"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val" id="stat-avg-shelf-life">0d</span>
+                <span class="stat-card-label">Avg Shelf Life</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Layout Split: Charts & Recent Activity -->
+          <div class="dashboard-layout-grid">
+            <!-- Left Side: Chart Panels -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              
+              <!-- Row 1 Charts -->
+              <div class="charts-grid-fg">
+                <!-- 1. Freshness Trend -->
+                <div class="card-freshguard chart-card-fg">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">Freshness Score Trend</span>
+                    <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
+                  </div>
+                  <div class="chart-canvas-wrapper">
+                    <canvas id="chart-freshness-trend"></canvas>
+                  </div>
+                </div>
+
+                <!-- 2. Food Quality Distribution -->
+                <div class="card-freshguard chart-card-fg">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">Food Quality Distribution</span>
+                    <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
+                  </div>
+                  <div class="chart-canvas-wrapper">
+                    <canvas id="chart-quality-dist"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Row 2 Charts -->
+              <div class="charts-grid-fg">
+                <!-- 3. Spoilage Risk -->
+                <div class="card-freshguard chart-card-fg">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">Spoilage Risk Level</span>
+                    <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
+                  </div>
+                  <div class="chart-canvas-wrapper">
+                    <canvas id="chart-spoilage-risk"></canvas>
+                  </div>
+                </div>
+
+                <!-- 4. Shelf-Life Distribution -->
+                <div class="card-freshguard chart-card-fg">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">Shelf-Life Distribution (Days)</span>
+                    <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
+                  </div>
+                  <div class="chart-canvas-wrapper">
+                    <canvas id="chart-shelf-life-dist"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Row 3 Charts -->
+              <div class="charts-grid-fg">
+                <!-- 5. Storage Temperature -->
+                <div class="card-freshguard chart-card-fg">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">Storage Temperature Log (°C)</span>
+                    <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
+                  </div>
+                  <div class="chart-canvas-wrapper">
+                    <canvas id="chart-storage-temp"></canvas>
+                  </div>
+                </div>
+
+                <!-- 6. Humidity -->
+                <div class="card-freshguard chart-card-fg">
+                  <div class="chart-card-header">
+                    <span class="chart-card-title">Relative Humidity (%)</span>
+                    <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
+                  </div>
+                  <div class="chart-canvas-wrapper">
+                    <canvas id="chart-storage-humidity"></canvas>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Side: Recent Activity & Reminders -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              
+              <!-- Quick Actions -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Quick Tools</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <button class="btn-fg btn-fg-primary" onclick="window.location.href='freshness-analysis.html'" style="justify-content: flex-start;">
+                    <i class="fa-solid fa-camera-retro"></i> Scan Food Freshness
+                  </button>
+                  <button class="btn-fg btn-fg-secondary" onclick="window.location.href='add-food.html'" style="justify-content: flex-start;">
+                    <i class="fa-solid fa-plus"></i> Add New Batch
+                  </button>
+                  <button class="btn-fg btn-fg-secondary" onclick="window.location.href='shelf-life.html'" style="justify-content: flex-start;">
+                    <i class="fa-solid fa-hourglass-half"></i> Forecast Shelf-Life
+                  </button>
+                </div>
+              </div>
+
+              <!-- Recent Activity Log -->
+              <div class="card-freshguard activity-card-fg">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1.25rem;">Recent Activity</h4>
+                <div class="activity-list" id="dashboard-activity-list">
+                  <!-- Injected via dashboard.js -->
+                </div>
+              </div>
+
+              <!-- Storage Quick Diagnostics -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Storage Diagnostics</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;" id="dashboard-storage-diagnostics">
+                  <!-- Injected via dashboard.js -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <!-- Page Specific Script -->
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

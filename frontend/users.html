@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .badge-status.active-usr {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--primary);
+      }
+      .badge-status.inactive-usr {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--spoiled);
+      }
+      
+      .modal-fg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(2px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1.5rem;
+      }
+      .modal-fg.active {
+        display: flex;
+      }
+      .modal-content-fg {
+        background-color: var(--bg-sidebar);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 500px;
+        box-shadow: var(--shadow-lg);
+        animation: fadeIn 0.2s ease forwards;
+      }
+      .modal-header-fg {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .modal-header-fg h4 {
+        font-family: var(--font-heading);
+        font-weight: 700;
+        margin: 0;
+      }
+      .modal-body-fg {
+        padding: 1.5rem;
+      }
+      .modal-footer-fg {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <!-- Filter Controls Bar -->
+          <div class="controls-bar">
+            <div class="controls-filters">
+              <div class="search-bar-container" style="order: 0;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search users name..." class="search-input" id="user-search-input">
+              </div>
+
+              <select id="filter-user-role" class="input-fg" style="width: 170px; height: 38px; border-radius: var(--radius-md);">
+                <option value="All">All Roles</option>
+                <option value="Consumer">Consumer</option>
+                <option value="Retail Manager">Retail Manager</option>
+                <option value="Warehouse Operator">Warehouse Operator</option>
+                <option value="Food Quality Inspector">Food Quality Inspector</option>
+                <option value="Administrator">Administrator</option>
+              </select>
+            </div>
+
+            <button class="btn-fg btn-fg-primary" onclick="openAddUserModal()">
+              <i class="fa-solid fa-user-plus"></i> Add New User
+            </button>
+          </div>
+
+          <!-- Users Table Card -->
+          <div class="card-freshguard fg-table-card animate-fade-in">
+            <div class="fg-table-wrapper">
+              <table class="fg-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Role</th>
+                    <th>Created Date</th>
+                    <th>Status</th>
+                    <th style="text-align: right; width: 180px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body">
+                  <!-- Loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Add/Edit User Modal Dialog -->
+    <div class="modal-fg" id="user-modal">
+      <div class="modal-content-fg">
+        <div class="modal-header-fg">
+          <h4 id="user-modal-title">Add New User</h4>
+          <button class="table-action-btn" onclick="closeUserModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body-fg">
+          <form id="user-modal-form">
+            <input type="hidden" id="modal-user-id">
+            
+            <div class="form-group-fg">
+              <label for="modal-user-name">Full Name</label>
+              <input type="text" id="modal-user-name" class="input-fg" required placeholder="e.g. David Miller">
+            </div>
+
+            <div class="form-group-fg">
+              <label for="modal-user-email">Email Address</label>
+              <input type="email" id="modal-user-email" class="input-fg" required placeholder="email@freshguard.com">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group-fg">
+                <label for="modal-user-role">Role</label>
+                <select id="modal-user-role" class="input-fg" required>
+                  <option value="Consumer">Consumer</option>
+                  <option value="Retail Manager">Retail Manager</option>
+                  <option value="Warehouse Operator">Warehouse Operator</option>
+                  <option value="Food Quality Inspector">Food Quality Inspector</option>
+                  <option value="Administrator">Administrator</option>
+                </select>
+              </div>
+              <div class="form-group-fg">
+                <label for="modal-user-status">Status</label>
+                <select id="modal-user-status" class="input-fg" required>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer-fg">
+          <button class="btn-fg btn-fg-secondary" onclick="closeUserModal()">Cancel</button>
+          <button class="btn-fg btn-fg-primary" id="modal-save-btn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+      // Admin page users management inline logic
+      let usersList = [];
+      let filters = { search: "", role: "All" };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Double check admin role
+        const currentUser = MockStore.getCurrentUser();
+        if (currentUser && currentUser.role !== "Administrator") {
+          alert("Unauthorized access. Redirecting to dashboard.");
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        refreshUsers();
+
+        // Bind filter event listeners
+        document.getElementById("user-search-input").addEventListener("input", (e) => {
+          filters.search = e.target.value.trim().toLowerCase();
+          renderUsersTable();
+        });
+        document.getElementById("filter-user-role").addEventListener("change", (e) => {
+          filters.role = e.target.value;
+          renderUsersTable();
+        });
+
+        // Hook global search
+        window.UsersPage = {
+          handleSearch: (value) => {
+            filters.search = value;
+            document.getElementById("user-search-input").value = value;
+            renderUsersTable();
+          }
+        };
+      });
+
+      function refreshUsers() {
+        usersList = MockStore.getUsers() || [];
+        renderUsersTable();
+      }
+
+      function renderUsersTable() {
+        const body = document.getElementById("users-table-body");
+        if (!body) return;
+
+        const filtered = usersList.filter(u => {
+          const matchesSearch = u.name.toLowerCase().includes(filters.search) ||
+                                u.email.toLowerCase().includes(filters.search);
+          const matchesRole = filters.role === "All" || u.role === filters.role;
+          return matchesSearch && matchesRole;
+        });
+
+        if (filtered.length === 0) {
+          body.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align:center; color: var(--text-muted); padding: 3rem 0;">No user records matching criteria.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        body.innerHTML = filtered.map(u => {
+          const badgeClass = u.status === "Active" ? "active-usr" : "inactive-usr";
+          return `
+            <tr>
+              <td style="font-weight: 600;">${u.name}</td>
+              <td>${u.email}</td>
+              <td><span style="font-size: 0.85rem; font-weight: 500;">${u.role}</span></td>
+              <td style="font-size: 0.85rem; color: var(--text-muted);">${u.createdDate}</td>
+              <td><span class="badge-status ${badgeClass}">${u.status}</span></td>
+              <td style="text-align: right;">
+                <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                  <button class="table-action-btn" title="${u.status === 'Active' ? 'Deactivate' : 'Activate'}" onclick="toggleUserStatus('${u.id}')">
+                    <i class="fa-solid ${u.status === 'Active' ? 'fa-user-slash text-warning' : 'fa-user-check text-fresh'}"></i>
+                  </button>
+                  <button class="table-action-btn" title="Edit user" onclick="openEditUserModal('${u.id}')">
+                    <i class="fa-solid fa-user-pen"></i>
+                  </button>
+                  <button class="table-action-btn delete" title="Delete user" onclick="deleteUserRecord('${u.id}', '${u.name}')">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      // Toggle status
+      window.toggleUserStatus = (id) => {
+        const u = usersList.find(user => user.id === id);
+        if (u) {
+          u.status = u.status === "Active" ? "Inactive" : "Active";
+          MockStore.saveUsers(usersList);
+          renderUsersTable();
+        }
+      };
+
+      // Modal handling
+      const modal = document.getElementById("user-modal");
+      let editingUserId = null;
+
+      window.openAddUserModal = () => {
+        editingUserId = null;
+        document.getElementById("user-modal-title").textContent = "Add New User";
+        document.getElementById("modal-user-id").value = "";
+        document.getElementById("modal-user-name").value = "";
+        document.getElementById("modal-user-email").value = "";
+        document.getElementById("modal-user-role").value = "Consumer";
+        document.getElementById("modal-user-status").value = "Active";
+        
+        modal.classList.add("active");
+      };
+
+      window.openEditUserModal = (id) => {
+        const u = usersList.find(user => user.id === id);
+        if (!u) return;
+
+        editingUserId = id;
+        document.getElementById("user-modal-title").textContent = "Edit User Settings";
+        document.getElementById("modal-user-id").value = u.id;
+        document.getElementById("modal-user-name").value = u.name;
+        document.getElementById("modal-user-email").value = u.email;
+        document.getElementById("modal-user-role").value = u.role;
+        document.getElementById("modal-user-status").value = u.status;
+
+        modal.classList.add("active");
+      };
+
+      window.closeUserModal = () => {
+        modal.classList.remove("active");
+      };
+
+      // Save modal handler
+      document.getElementById("modal-save-btn").addEventListener("click", () => {
+        const name = document.getElementById("modal-user-name").value.trim();
+        const email = document.getElementById("modal-user-email").value.trim();
+        const role = document.getElementById("modal-user-role").value;
+        const status = document.getElementById("modal-user-status").value;
+
+        if (!name || !email) {
+          alert("Please fill in name and email fields.");
+          return;
+        }
+
+        if (editingUserId) {
+          // Edit
+          const u = usersList.find(user => user.id === editingUserId);
+          if (u) {
+            u.name = name;
+            u.email = email;
+            u.role = role;
+            u.status = status;
+          }
+        } else {
+          // Add
+          const newUser = {
+            id: "u" + (usersList.length + 1) + "_" + Date.now().toString().slice(-4),
+            name,
+            email,
+            role,
+            status,
+            createdDate: new Date().toISOString().split('T')[0]
+          };
+          usersList.push(newUser);
+        }
+
+        MockStore.saveUsers(usersList);
+        closeUserModal();
+        refreshUsers();
+      });
+
+      // Delete user
+      window.deleteUserRecord = (id, name) => {
+        if (id === MockStore.getCurrentUser().id) {
+          alert("Self deletion is blocked!");
+          return;
+        }
+
+        if (confirm(`Are you sure you want to delete the user account: "${name}"?`)) {
+          usersList = usersList.filter(user => user.id !== id);
+          MockStore.saveUsers(usersList);
+          refreshUsers();
+        }
+      };
+    </script>
+  </body>
+</html>

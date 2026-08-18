@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alerts Center - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .alert-item-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.25rem;
+        padding: 1.25rem;
+        border-radius: var(--radius-lg);
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        animation: fadeIn 0.25s ease forwards;
+        position: relative;
+      }
+      .alert-item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+      .alert-item-card.unread {
+        border-left: 5px solid var(--secondary);
+        background-color: rgba(99, 102, 241, 0.02);
+      }
+      .alert-item-card.unread.level-critical {
+        border-left-color: var(--spoiled);
+      }
+      .alert-item-card.unread.level-warning {
+        border-left-color: var(--warning);
+      }
+      .alert-item-card.unread.level-information {
+        border-left-color: var(--primary);
+      }
+      
+      .alert-icon-big {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+      }
+      .alert-icon-big.critical {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--spoiled);
+      }
+      .alert-icon-big.warning {
+        background-color: rgba(234, 179, 8, 0.1);
+        color: var(--warning);
+      }
+      .alert-icon-big.information {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--primary);
+      }
+      
+      .alert-body-text {
+        flex: 1;
+      }
+      .alert-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 4px;
+      }
+      .alert-title-text {
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-main);
+      }
+      .alert-meta-tag {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      
+      .alert-action-btn-row {
+        display: flex;
+        gap: 8px;
+        align-self: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <!-- Control Filter and mark read bar -->
+          <div class="controls-bar">
+            <div class="controls-filters">
+              <div class="search-bar-container" style="order: 0;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search alert target..." class="search-input" id="alert-search">
+              </div>
+
+              <!-- Filter severity -->
+              <select id="filter-alert-severity" class="input-fg" style="width: 170px; height: 38px; border-radius: var(--radius-md);">
+                <option value="All">All Severities</option>
+                <option value="Critical">Critical Alerts</option>
+                <option value="Warning">Warning Alerts</option>
+                <option value="Information">Info Notifications</option>
+              </select>
+            </div>
+
+            <button class="btn-fg btn-fg-secondary" id="alerts-mark-all-btn">
+              <i class="fa-solid fa-square-check"></i> Mark All Read
+            </button>
+          </div>
+
+          <!-- List of Alerts -->
+          <div style="max-width: 900px; margin: 0 auto;" id="alerts-list-container">
+            <!-- Injected via alerts.js -->
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <!-- Page Specific Script -->
+    <script src="js/alerts.js"></script>
+  </body>
+</html>

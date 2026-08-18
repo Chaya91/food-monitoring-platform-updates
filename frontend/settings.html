@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Application Settings - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .settings-card-layout {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      
+      .settings-row-fg {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .settings-row-fg:last-child {
+        border-bottom: none;
+      }
+      
+      .settings-row-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        margin-bottom: 2px;
+      }
+      .settings-row-desc {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <div class="settings-card-layout">
+            <!-- 1. Notification Center Settings -->
+            <div class="card-freshguard animate-fade-in">
+              <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                <i class="fa-solid fa-bell text-secondary" style="margin-right: 8px;"></i> Notification Channels
+              </h4>
+
+              <div class="settings-row-fg">
+                <div>
+                  <div class="settings-row-title">Email Dispatch Alerts</div>
+                  <div class="settings-row-desc">Receive emergency daily reports and cold storage compliance alerts via email.</div>
+                </div>
+                <label class="switch-fg">
+                  <input type="checkbox" id="sett-email" checked>
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+
+              <div class="settings-row-fg">
+                <div>
+                  <div class="settings-row-title">Freshness Degradation Warnings</div>
+                  <div class="settings-row-desc">Trigger notification when visual AI classification drops below 80%.</div>
+                </div>
+                <label class="switch-fg">
+                  <input type="checkbox" id="sett-freshness" checked>
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+
+              <div class="settings-row-fg">
+                <div>
+                  <div class="settings-row-title">Expiry Schedule Alarms</div>
+                  <div class="settings-row-desc">Trigger warnings for items approaching estimated shelf life (<= 3 days remaining).</div>
+                </div>
+                <label class="switch-fg">
+                  <input type="checkbox" id="sett-expiry" checked>
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+
+              <div class="settings-row-fg">
+                <div>
+                  <div class="settings-row-title">Storage Environment Alarms</div>
+                  <div class="settings-row-desc">Trigger notifications on immediate sensor spikes (temperatures or humidity bounds).</div>
+                </div>
+                <label class="switch-fg">
+                  <input type="checkbox" id="sett-storage" checked>
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 2. System Presets & Limits (Only Admin/Manager) -->
+            <div class="card-freshguard">
+              <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                <i class="fa-solid fa-sliders text-fresh" style="margin-right: 8px;"></i> Presets & Safety Thresholds
+              </h4>
+
+              <div class="form-group-fg" style="margin-top: 1rem;">
+                <label for="sett-limit-temp">Critical Temperature Threshold (°C)</label>
+                <input type="number" id="sett-limit-temp" class="input-fg" step="0.1" value="5.0" style="max-width: 200px;">
+                <span class="settings-row-desc" style="display: block; margin-top: 4px;">Trigger storage alarm if cold zones exceed this temperature limit.</span>
+              </div>
+
+              <div class="form-group-fg" style="margin-top: 1rem;">
+                <label for="sett-limit-humidity">Max Allowed Humidity Cap (%)</label>
+                <input type="number" id="sett-limit-humidity" class="input-fg" min="0" max="100" value="80" style="max-width: 200px;">
+                <span class="settings-row-desc" style="display: block; margin-top: 4px;">Raise warnings if moisture exceeds this limit to avoid mold build-up.</span>
+              </div>
+            </div>
+
+            <!-- Save Actions button bar -->
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+              <button class="btn-fg btn-fg-secondary" onclick="window.location.href='dashboard.html'">Cancel</button>
+              <button class="btn-fg btn-fg-primary" id="save-settings-btn" style="width: 150px;">Save Settings</button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Only Admin should view Settings as per layout configuration
+        const user = MockStore.getCurrentUser();
+        if (user && user.role !== "Administrator") {
+          alert("Unauthorized access. Redirecting to dashboard.");
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        // Load settings state
+        const settings = MockStore.getSettings() || {};
+        
+        document.getElementById("sett-email").checked = settings.emailNotifications !== false;
+        document.getElementById("sett-freshness").checked = settings.freshnessAlerts !== false;
+        document.getElementById("sett-expiry").checked = settings.expiryAlerts !== false;
+        document.getElementById("sett-storage").checked = settings.storageAlerts !== false;
+        document.getElementById("sett-limit-temp").value = settings.criticalLimitTemp || "5.0";
+        document.getElementById("sett-limit-humidity").value = settings.criticalLimitHumidity || "80";
+
+        // Bind Save Settings
+        document.getElementById("save-settings-btn").addEventListener("click", () => {
+          const email = document.getElementById("sett-email").checked;
+          const freshness = document.getElementById("sett-freshness").checked;
+          const expiry = document.getElementById("sett-expiry").checked;
+          const storage = document.getElementById("sett-storage").checked;
+          const limitTemp = parseFloat(document.getElementById("sett-limit-temp").value);
+          const limitHum = parseInt(document.getElementById("sett-limit-humidity").value);
+
+          const updated = {
+            ...settings,
+            emailNotifications: email,
+            freshnessAlerts: freshness,
+            expiryAlerts: expiry,
+            storageAlerts: storage,
+            criticalLimitTemp: limitTemp,
+            criticalLimitHumidity: limitHum
+          };
+
+          MockStore.saveSettings(updated);
+          alert("Settings updated and saved successfully.");
+          window.location.href = "dashboard.html";
+        });
+      });
+    </script>
+  </body>
+</html>
