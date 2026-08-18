@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics Dashboard - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- ChartJS via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          
+          <!-- Statistics Cards Grid -->
+          <div class="stats-row animate-fade-in" style="margin-bottom: 2rem;">
+            <!-- Freshness Rate -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(16, 185, 129, 0.1); color: var(--primary);">
+                <i class="fa-solid fa-face-smile"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val text-fresh" id="an-fresh-rate">94.2%</span>
+                <span class="stat-card-label">Freshness Rate</span>
+              </div>
+            </div>
+
+            <!-- Spoilage Rate -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(239, 68, 68, 0.1); color: var(--spoiled);">
+                <i class="fa-solid fa-dumpster-fire"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val text-spoiled" id="an-spoil-rate">2.1%</span>
+                <span class="stat-card-label">Spoilage Rate</span>
+              </div>
+            </div>
+
+            <!-- Waste Rate -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(249, 115, 22, 0.1); color: var(--near-spoilage);">
+                <i class="fa-solid fa-trash-arrow-up"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val text-near-spoilage" id="an-waste-rate">1.8%</span>
+                <span class="stat-card-label">Waste Rate</span>
+              </div>
+            </div>
+
+            <!-- Average Shelf Life -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(234, 179, 8, 0.1); color: var(--warning);">
+                <i class="fa-solid fa-calendar-check"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val" id="an-avg-life">7.2 days</span>
+                <span class="stat-card-label">Avg Shelf Life</span>
+              </div>
+            </div>
+
+            <!-- Storage Compliance -->
+            <div class="card-freshguard stat-card-fg">
+              <div class="stat-card-icon" style="background-color: rgba(99, 102, 241, 0.1); color: var(--secondary);">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="stat-card-info">
+                <span class="stat-card-val" id="an-compliance">92.4%</span>
+                <span class="stat-card-label">Compliance Index</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Double Column Chart Layout -->
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Row 1 Charts -->
+            <div class="charts-grid-fg">
+              <!-- 1. Freshness Trend -->
+              <div class="card-freshguard chart-card-fg">
+                <div class="chart-card-header">
+                  <span class="chart-card-title">Freshness Coefficient Trend</span>
+                  <i class="fa-solid fa-chart-line text-muted"></i>
+                </div>
+                <div class="chart-canvas-wrapper">
+                  <canvas id="an-chart-fresh-trend"></canvas>
+                </div>
+              </div>
+
+              <!-- 2. Spoilage Trend -->
+              <div class="card-freshguard chart-card-fg">
+                <div class="chart-card-header">
+                  <span class="chart-card-title">Monthly Spoilage Rate Trend</span>
+                  <i class="fa-solid fa-chart-area text-muted"></i>
+                </div>
+                <div class="chart-canvas-wrapper">
+                  <canvas id="an-chart-spoil-trend"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2 Charts -->
+            <div class="charts-grid-fg">
+              <!-- 3. Category Quality Breakdown -->
+              <div class="card-freshguard chart-card-fg">
+                <div class="chart-card-header">
+                  <span class="chart-card-title">Product Category Quality Breakdown</span>
+                  <i class="fa-solid fa-chart-bar text-muted"></i>
+                </div>
+                <div class="chart-canvas-wrapper">
+                  <canvas id="an-chart-cat-quality"></canvas>
+                </div>
+              </div>
+
+              <!-- 4. Waste Reduction -->
+              <div class="card-freshguard chart-card-fg">
+                <div class="chart-card-header">
+                  <span class="chart-card-title">Prevented Food Waste Yield (Kg Saved)</span>
+                  <i class="fa-solid fa-shield text-muted"></i>
+                </div>
+                <div class="chart-canvas-wrapper">
+                  <canvas id="an-chart-waste-reduction"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 3 Charts -->
+            <div class="charts-grid-fg">
+              <!-- 5. Storage Performance -->
+              <div class="card-freshguard chart-card-fg">
+                <div class="chart-card-header">
+                  <span class="chart-card-title">HACCP Storage Performance Index</span>
+                  <i class="fa-solid fa-circle-check text-muted"></i>
+                </div>
+                <div class="chart-canvas-wrapper">
+                  <canvas id="an-chart-storage-perf"></canvas>
+                </div>
+              </div>
+
+              <!-- 6. Shelf-Life Predictions -->
+              <div class="card-freshguard chart-card-fg">
+                <div class="chart-card-header">
+                  <span class="chart-card-title">Shelf-Life Prediction Model Accuracy</span>
+                  <i class="fa-solid fa-wand-magic-sparkles text-muted"></i>
+                </div>
+                <div class="chart-canvas-wrapper">
+                  <canvas id="an-chart-shelf-accuracy"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <!-- Page Specific Script -->
+    <script src="js/analytics.js"></script>
+  </body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Storage Details - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .compliance-panel {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 2rem;
+      }
+      @media (max-width: 900px) {
+        .compliance-panel {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      .checklist-item-fg {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .checklist-item-fg:last-child {
+        border-bottom: none;
+      }
+      .checklist-checkbox-icon {
+        font-size: 1.15rem;
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <div class="controls-bar" style="margin-bottom: 1.5rem;">
+            <button class="btn-fg btn-fg-secondary" onclick="window.location.href='storage.html'">
+              <i class="fa-solid fa-arrow-left"></i> Back to Monitoring
+            </button>
+            <button class="btn-fg btn-fg-primary" onclick="alert('Manual calibration request dispatched to engineering. Sensor nodes recalibrating in 30 seconds.')">
+              <i class="fa-solid fa-arrows-rotate"></i> Recalibrate Node Sensors
+            </button>
+          </div>
+
+          <div class="compliance-panel">
+            <!-- Left Side: Compliance stats and indicators -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              
+              <!-- Compliance Score Card -->
+              <div class="card-freshguard text-center animate-fade-in">
+                <h3 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.25rem;" id="zone-details-title">Cold Storage A</h3>
+                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1.5rem;">Storage Compliance Audit Report</p>
+
+                <div style="margin-bottom: 1.5rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.875rem; font-weight: 700; margin-bottom: 6px;">
+                    <span>Environmental Regulatory Compliance</span>
+                    <span id="zone-compliance-val">94%</span>
+                  </div>
+                  <div class="progress-bar-fg" style="height: 12px;">
+                    <div class="progress-bar-fill bg-fresh" id="zone-compliance-bar" style="width: 0%;"></div>
+                  </div>
+                </div>
+
+                <div class="details-metrics-grid" style="margin-top: 0;">
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Compliance Index</span>
+                    <div class="metric-detail-value" id="zone-compliance-status">Excellent</div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Status Risk</span>
+                    <div class="metric-detail-value text-fresh" id="zone-risk-status">Low</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Parameter Targets details -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Zone Parameter Targets</h4>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="padding: 10px 12px; background-color: var(--bg-app); border-radius: var(--radius-md); font-size: 0.82rem; display: flex; justify-content: space-between;">
+                    <span style="font-weight: 600; color: var(--text-main);">Temperature Target Range</span>
+                    <span style="font-weight: 700;" id="tgt-temp">2.0°C - 5.0°C</span>
+                  </div>
+                  <div style="padding: 10px 12px; background-color: var(--bg-app); border-radius: var(--radius-md); font-size: 0.82rem; display: flex; justify-content: space-between;">
+                    <span style="font-weight: 600; color: var(--text-main);">Humidity Target Range</span>
+                    <span style="font-weight: 700;" id="tgt-humidity">80% - 90%</span>
+                  </div>
+                  <div style="padding: 10px 12px; background-color: var(--bg-app); border-radius: var(--radius-md); font-size: 0.82rem; display: flex; justify-content: space-between;">
+                    <span style="font-weight: 600; color: var(--text-main);">Air Circulation Standard</span>
+                    <span style="font-weight: 700;">Constant (>= 0.5 m/s)</span>
+                  </div>
+                  <div style="padding: 10px 12px; background-color: var(--bg-app); border-radius: var(--radius-md); font-size: 0.82rem; display: flex; justify-content: space-between;">
+                    <span style="font-weight: 600; color: var(--text-main);">Light Exposure Threshold</span>
+                    <span style="font-weight: 700;">Dark (< 50 Lux)</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Side: Checklist Audit and Logs -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              
+              <!-- Sensors Check Checklist -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1.25rem;">HACCP Regulation Checklist</h4>
+                
+                <div class="checklist-item-fg">
+                  <i class="fa-solid fa-circle-check checklist-checkbox-icon text-fresh"></i>
+                  <div>
+                    <strong style="font-size: 0.85rem; display: block;">Sensor Calibration Check</strong>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Calibrated within last 30 days. Next inspection in 12 days.</span>
+                  </div>
+                </div>
+                
+                <div class="checklist-item-fg">
+                  <i class="fa-solid fa-circle-check checklist-checkbox-icon text-fresh" id="chk-temp-icon"></i>
+                  <div>
+                    <strong style="font-size: 0.85rem; display: block;">Thermal Preservation Index</strong>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);" id="chk-temp-desc">Temperature checks pass required guidelines.</span>
+                  </div>
+                </div>
+
+                <div class="checklist-item-fg">
+                  <i class="fa-solid fa-circle-check checklist-checkbox-icon text-fresh" id="chk-hum-icon"></i>
+                  <div>
+                    <strong style="font-size: 0.85rem; display: block;">Moisture Level Regulation</strong>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);" id="chk-hum-desc">Humidity levels compliant with food group specifications.</span>
+                  </div>
+                </div>
+
+                <div class="checklist-item-fg">
+                  <i class="fa-solid fa-circle-check checklist-checkbox-icon text-fresh"></i>
+                  <div>
+                    <strong style="font-size: 0.85rem; display: block;">Air Vent Clearance</strong>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Ventilation outlets checked and clear of debris and boxes.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Storage Details logs table -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Sensor Node Event Log</h4>
+                <div class="fg-table-wrapper">
+                  <table class="fg-table" style="font-size: 0.8rem;">
+                    <thead>
+                      <tr>
+                        <th>Timestamp</th>
+                        <th>Sensor Node</th>
+                        <th>Reading</th>
+                        <th>Compliance</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sensor-event-logs-body">
+                      <!-- Loaded dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const zoneName = urlParams.get('zone') || 'Cold Storage A';
+
+        document.getElementById("zone-details-title").textContent = zoneName;
+
+        // Custom config mapping to display compliance variables
+        let compliance = 94;
+        let risk = "Low";
+        let status = "Excellent";
+        let tempRange = "2.0°C - 5.0°C";
+        let humRange = "80% - 90%";
+        let events = [];
+
+        if (zoneName === 'Cold Storage B') {
+          compliance = 64;
+          risk = "High";
+          status = "Critical (Warning)";
+          tempRange = "2.0°C - 5.0°C";
+          humRange = "70% - 80%";
+          events = [
+            { time: "10 mins ago", node: "Temp Sensor B-1", val: "8.2°C", stat: "Critical" },
+            { time: "45 mins ago", node: "Temp Sensor B-1", val: "7.8°C", stat: "Critical" },
+            { time: "1 hour ago", node: "Humidity B-2", val: "60%", stat: "Warning" },
+            { time: "3 hours ago", node: "Light Sensor B-3", val: "0 Lux", stat: "Optimal" }
+          ];
+        } else if (zoneName === 'Freezer Zone A') {
+          compliance = 98;
+          risk = "Low";
+          status = "Outstanding";
+          tempRange = "-22.0°C - -15.0°C";
+          humRange = "40% - 50%";
+          events = [
+            { time: "12 mins ago", node: "Freezer Temp A-1", val: "-18.2°C", stat: "Optimal" },
+            { time: "1 hour ago", node: "Moisture Sensor A-2", val: "45%", stat: "Optimal" }
+          ];
+        } else if (zoneName === 'Shelf B1') {
+          compliance = 96;
+          risk = "Low";
+          status = "Excellent";
+          tempRange = "15.0°C - 22.0°C";
+          humRange = "55% - 65%";
+          events = [
+            { time: "3 mins ago", node: "Shelf Temp B-1", val: "18.2°C", stat: "Optimal" },
+            { time: "1 hour ago", node: "Humidity B-2", val: "62%", stat: "Optimal" }
+          ];
+        } else if (zoneName === 'Shelf C2') {
+          compliance = 82;
+          risk = "Medium";
+          status = "Good";
+          tempRange = "12.0°C - 16.0°C";
+          humRange = "60% - 70%";
+          events = [
+            { time: "15 mins ago", node: "Humidity C-2", val: "78%", stat: "Warning" },
+            { time: "1 hour ago", node: "Temp Sensor C-1", val: "14.5°C", stat: "Optimal" }
+          ];
+        } else { // Cold Storage A
+          compliance = 94;
+          risk = "Low";
+          status = "Excellent";
+          tempRange = "2.0°C - 5.0°C";
+          humRange = "80% - 90%";
+          events = [
+            { time: "5 mins ago", node: "Temp Sensor A-1", val: "3.8°C", stat: "Optimal" },
+            { time: "30 mins ago", node: "Moisture Sensor A-2", val: "85%", stat: "Optimal" },
+            { time: "2 hours ago", node: "Light Sensor A-3", val: "0 Lux", stat: "Optimal" }
+          ];
+        }
+
+        // Fill HTML values
+        document.getElementById("zone-compliance-val").textContent = `${compliance}%`;
+        document.getElementById("zone-compliance-status").textContent = status;
+        document.getElementById("zone-risk-status").textContent = risk;
+        document.getElementById("tgt-temp").textContent = tempRange;
+        document.getElementById("tgt-humidity").textContent = humRange;
+
+        // Apply colors based on compliance index
+        const bar = document.getElementById("zone-compliance-bar");
+        const statusVal = document.getElementById("zone-risk-status");
+        
+        setTimeout(() => {
+          bar.style.width = `${compliance}%`;
+          if (compliance < 70) {
+            bar.className = "progress-bar-fill bg-spoiled";
+            statusVal.className = "metric-detail-value text-spoiled";
+          } else if (compliance < 85) {
+            bar.className = "progress-bar-fill bg-warning";
+            statusVal.className = "metric-detail-value text-warning";
+          } else {
+            bar.className = "progress-bar-fill bg-fresh";
+            statusVal.className = "metric-detail-value text-fresh";
+          }
+        }, 100);
+
+        // Adjust checklist icons based on compliance
+        const tempIcon = document.getElementById("chk-temp-icon");
+        const tempDesc = document.getElementById("chk-temp-desc");
+        const humIcon = document.getElementById("chk-hum-icon");
+        const humDesc = document.getElementById("chk-hum-desc");
+
+        if (zoneName === 'Cold Storage B') {
+          tempIcon.className = "fa-solid fa-circle-xmark checklist-checkbox-icon text-spoiled";
+          tempDesc.textContent = "CRITICAL: Zone temperature (8.2°C) is above the 5.0°C safety cap.";
+        } else if (zoneName === 'Shelf C2') {
+          humIcon.className = "fa-solid fa-circle-exclamation checklist-checkbox-icon text-warning";
+          humDesc.textContent = "WARNING: Relative humidity (78%) is slightly above the 70% threshold limit.";
+        }
+
+        // Render logs
+        const logBody = document.getElementById("sensor-event-logs-body");
+        logBody.innerHTML = events.map(evt => {
+          let statClass = "fresh";
+          if (evt.stat === "Warning") statClass = "warning";
+          else if (evt.stat === "Critical") statClass = "spoiled";
+
+          return `
+            <tr>
+              <td>${evt.time}</td>
+              <td style="font-weight:600;">${evt.node}</td>
+              <td>${evt.val}</td>
+              <td><span class="badge-status ${statClass}">${evt.stat}</span></td>
+            </tr>
+          `;
+        }).join("");
+      });
+    </script>
+  </body>
+</html>

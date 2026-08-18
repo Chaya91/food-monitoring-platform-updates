@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports Dashboard - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .reports-grid-fg {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .report-card-fg {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 200px;
+      }
+      .report-icon-frame {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-md);
+        background-color: var(--bg-input);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: var(--secondary);
+      }
+      
+      .preview-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(2px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1.5rem;
+      }
+      .preview-modal.active {
+        display: flex;
+      }
+      .preview-content {
+        background-color: var(--bg-sidebar);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 700px;
+        box-shadow: var(--shadow-lg);
+        animation: fadeIn 0.2s ease forwards;
+        display: flex;
+        flex-direction: column;
+        max-height: 85vh;
+      }
+      .preview-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .preview-body {
+        padding: 1.5rem;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 0.85rem;
+        background-color: var(--bg-app);
+        white-space: pre-wrap;
+      }
+      .preview-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <div class="reports-grid-fg animate-fade-in">
+            <!-- 1. Freshness Audit -->
+            <div class="card-freshguard report-card-fg">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <div class="report-icon-frame" style="color: var(--primary);"><i class="fa-solid fa-camera-retro"></i></div>
+                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Daily Audit</span>
+                </div>
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.25rem;">Freshness Audit Report</h4>
+                <p class="text-muted" style="font-size: 0.82rem;">Visual scan assessments log, neural confidence index ratings, and spoilage probability charts.</p>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 1.5rem;">
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="viewReportPreview('freshness')">View</button>
+                <button class="btn-fg btn-fg-primary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('freshness', 'pdf')">PDF</button>
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('freshness', 'xlsx')">Excel</button>
+              </div>
+            </div>
+
+            <!-- 2. Shelf-Life Forecast -->
+            <div class="card-freshguard report-card-fg">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <div class="report-icon-frame" style="color: var(--warning);"><i class="fa-solid fa-hourglass-half"></i></div>
+                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Forecast Log</span>
+                </div>
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.25rem;">Shelf-Life Prediction Report</h4>
+                <p class="text-muted" style="font-size: 0.82rem;">Estimated remaining shelf-lives, forecasted expiry date tables, and product deterioration trends.</p>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 1.5rem;">
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="viewReportPreview('shelf-life')">View</button>
+                <button class="btn-fg btn-fg-primary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('shelf-life', 'pdf')">PDF</button>
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('shelf-life', 'xlsx')">Excel</button>
+              </div>
+            </div>
+
+            <!-- 3. Inventory Quality -->
+            <div class="card-freshguard report-card-fg">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <div class="report-icon-frame"><i class="fa-solid fa-boxes-stacked"></i></div>
+                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Warehouse Audit</span>
+                </div>
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.25rem;">Inventory Quality Report</h4>
+                <p class="text-muted" style="font-size: 0.82rem;">Active product counts, categorization summaries, quantity margins, and status distributions.</p>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 1.5rem;">
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="viewReportPreview('inventory')">View</button>
+                <button class="btn-fg btn-fg-primary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('inventory', 'pdf')">PDF</button>
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('inventory', 'xlsx')">Excel</button>
+              </div>
+            </div>
+
+            <!-- 4. Waste Risk Reduction -->
+            <div class="card-freshguard report-card-fg">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <div class="report-icon-frame" style="color: var(--near-spoilage);"><i class="fa-solid fa-recycle"></i></div>
+                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Economic Impact</span>
+                </div>
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.25rem;">Waste Reduction Report</h4>
+                <p class="text-muted" style="font-size: 0.82rem;">Spoilage waste volumes, prevented organic loss indexes, cost-savings metrics, and markdown rates.</p>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 1.5rem;">
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="viewReportPreview('waste')">View</button>
+                <button class="btn-fg btn-fg-primary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('waste', 'pdf')">PDF</button>
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('waste', 'xlsx')">Excel</button>
+              </div>
+            </div>
+
+            <!-- 5. Storage Compliance -->
+            <div class="card-freshguard report-card-fg">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <div class="report-icon-frame" style="color: var(--secondary);"><i class="fa-solid fa-temperature-half"></i></div>
+                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">HACCP Regulation</span>
+                </div>
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.25rem;">Storage Compliance Report</h4>
+                <p class="text-muted" style="font-size: 0.82rem;">Environmental logs compliance factor, critical boundary logs, air vent audits, and device calibrations.</p>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 1.5rem;">
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="viewReportPreview('compliance')">View</button>
+                <button class="btn-fg btn-fg-primary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('compliance', 'pdf')">PDF</button>
+                <button class="btn-fg btn-fg-secondary" style="flex: 1; padding: 6px 10px; font-size: 0.78rem;" onclick="triggerSimulatedDownload('compliance', 'xlsx')">Excel</button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="preview-modal" id="report-preview-modal">
+      <div class="preview-content">
+        <div class="preview-header">
+          <h4 id="preview-title">Report Data Preview</h4>
+          <button class="table-action-btn" onclick="closePreviewModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="preview-body" id="preview-body-content">
+          <!-- Text template injected dynamically -->
+        </div>
+        <div class="preview-footer">
+          <button class="btn-fg btn-fg-secondary" onclick="closePreviewModal()">Close</button>
+          <button class="btn-fg btn-fg-primary" id="download-from-preview-btn">Download PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <!-- Page Specific Script -->
+    <script src="js/reports.js"></script>
+  </body>
+</html>

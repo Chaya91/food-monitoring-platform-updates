@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FreshGuard - Redirecting...</title>
+    <script>
+      if (localStorage.getItem("fg_currentUser")) {
+        window.location.href = "dashboard.html";
+      } else {
+        window.location.href = "login.html";
+      }
+    </script>
+  </head>
+  <body>
+    <div style="font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;">
+      <h2>Loading FreshGuard...</h2>
+      <p>If not redirected, follow this <a href="login.html">link to login</a>.</p>
+    </div>
+  </body>
+</html>

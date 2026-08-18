@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Details - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .details-grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+      @media (max-width: 900px) {
+        .details-grid-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      .food-hero-img-card {
+        position: relative;
+        height: 250px;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
+      }
+      
+      .food-hero-img-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .food-hero-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(15, 23, 42, 0.7));
+        padding: 1.5rem 1.5rem 1rem;
+        color: white;
+      }
+      
+      .recommendation-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .recommendation-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 10px 12px;
+        border-radius: var(--radius-md);
+        background-color: var(--bg-app);
+        border-left: 4px solid var(--primary);
+      }
+      .recommendation-item.alert-item {
+        border-left-color: var(--near-spoilage);
+      }
+      .recommendation-item.danger-item {
+        border-left-color: var(--spoiled);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <div class="controls-bar" style="margin-bottom: 1.5rem;">
+            <button class="btn-fg btn-fg-secondary" onclick="window.location.href='inventory.html'">
+              <i class="fa-solid fa-arrow-left"></i> Back to Inventory
+            </button>
+            
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-fg btn-fg-primary" id="scan-freshness-btn">
+                <i class="fa-solid fa-camera-retro"></i> Re-Analyze Freshness
+              </button>
+              <button class="btn-fg btn-fg-danger" id="delete-batch-btn">
+                <i class="fa-solid fa-trash-can"></i> Delete Batch
+              </button>
+            </div>
+          </div>
+
+          <!-- Error Alert if food not found -->
+          <div class="card-freshguard text-center" id="error-card" style="display: none; padding: 4rem 2rem;">
+            <i class="fa-solid fa-circle-exclamation text-spoiled" style="font-size: 3.5rem; margin-bottom: 1rem;"></i>
+            <h3 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.5rem;">Batch Record Not Found</h3>
+            <p class="text-muted" style="margin-bottom: 1.5rem;">The requested food item batch is either deleted or the URL parameter is invalid.</p>
+            <button class="btn-fg btn-fg-primary" onclick="window.location.href='inventory.html'">Go to Inventory</button>
+          </div>
+
+          <!-- Food Details Container -->
+          <div class="details-grid-layout" id="details-view-container">
+            <!-- Left Side: Profile & Environmental Parameters -->
+            <div>
+              <!-- Food Image Card -->
+              <div class="food-hero-img-card">
+                <img id="food-detail-img" src="https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=600" alt="Food Image">
+                <div class="food-hero-overlay">
+                  <span class="badge-status fresh" id="food-detail-badge" style="margin-bottom: 6px;">Fresh</span>
+                  <h3 id="food-detail-name" style="font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Fresh Fuji Apples</h3>
+                </div>
+              </div>
+
+              <!-- Metadata attributes -->
+              <div class="card-freshguard" style="margin-bottom: 1.5rem;">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Product Information</h4>
+                <div class="details-metrics-grid" style="margin-top: 0;">
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Batch ID</span>
+                    <div class="metric-detail-value"><code id="meta-batch">AP501</code></div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Category</span>
+                    <div class="metric-detail-value" id="meta-category">Fruits</div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Quantity</span>
+                    <div class="metric-detail-value" id="meta-quantity">120 Units</div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Packaging Type</span>
+                    <div class="metric-detail-value" id="meta-packaging">Crate / Loose</div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Purchase Date</span>
+                    <div class="metric-detail-value" id="meta-purchase">2026-08-05</div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Storage Location</span>
+                    <div class="metric-detail-value" id="meta-location">Cold Storage A</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Environment parameters -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Storage Environmental Logs</h4>
+                <div class="details-metrics-grid" style="margin-top: 0;">
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Temperature</span>
+                    <div class="metric-detail-value"><i class="fa-solid fa-temperature-half text-muted"></i> <span id="env-temp">3.8°C</span></div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Humidity</span>
+                    <div class="metric-detail-value"><i class="fa-solid fa-droplet text-muted"></i> <span id="env-humidity">85%</span></div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Air Circulation</span>
+                    <div class="metric-detail-value"><i class="fa-solid fa-wind text-fresh"></i> <span id="env-air">Optimal</span></div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Light Exposure</span>
+                    <div class="metric-detail-value"><i class="fa-solid fa-sun text-warning"></i> <span id="env-light">None</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: AI Freshness Analytics -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              
+              <!-- Circular Freshness Gauge -->
+              <div class="card-freshguard text-center">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 0.5rem;">Freshness Diagnostics</h4>
+                
+                <div class="score-circle-container">
+                  <svg class="score-circle-svg">
+                    <circle class="score-circle-bg" cx="90" cy="90" r="84"></circle>
+                    <circle class="score-circle-bar" id="details-score-circle" cx="90" cy="90" r="84"></circle>
+                  </svg>
+                  <div class="score-circle-text">
+                    <span class="score-circle-number" id="details-score-val">0%</span>
+                    <span class="score-circle-label">Freshness</span>
+                  </div>
+                </div>
+
+                <div class="details-metrics-grid" style="margin-top: 1rem;">
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Spoilage Probability</span>
+                    <div class="metric-detail-value" id="ai-spoilage">4%</div>
+                  </div>
+                  <div class="metric-detail-item">
+                    <span class="metric-detail-label">Quality Score</span>
+                    <div class="metric-detail-value" id="ai-quality">92%</div>
+                  </div>
+                </div>
+
+                <div class="metric-detail-item" style="margin-top: 1rem; background-color: var(--bg-app);">
+                  <span class="metric-detail-label" style="display: block; margin-bottom: 0.5rem;">Estimated Remaining Shelf Life</span>
+                  <div class="metric-detail-value" style="font-size: 1.5rem; color: var(--primary);" id="ai-shelflife">10 Days</div>
+                </div>
+              </div>
+
+              <!-- Recommendation rules -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">AI Recommendations</h4>
+                <ul class="recommendation-list" id="recommendations-box">
+                  <!-- Injected dynamically -->
+                </ul>
+              </div>
+
+              <!-- Historical checkups -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Analysis Scanning History</h4>
+                <div class="fg-table-wrapper">
+                  <table class="fg-table" style="font-size: 0.8rem;">
+                    <thead>
+                      <tr>
+                        <th>Date Time</th>
+                        <th>Type</th>
+                        <th>Score</th>
+                        <th>Result</th>
+                      </tr>
+                    </thead>
+                    <tbody id="history-logs-body">
+                      <!-- Injected dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const foodId = urlParams.get('id');
+
+        if (!foodId) {
+          showError();
+          return;
+        }
+
+        const foods = await API.getFoods();
+        const item = foods.find(f => f.id === foodId);
+
+        if (!item) {
+          showError();
+          return;
+        }
+
+        // Render food profile details
+        renderFoodDetails(item);
+
+        // Bind scan redirection
+        document.getElementById("scan-freshness-btn").addEventListener("click", () => {
+          window.location.href = `freshness-analysis.html?category=${encodeURIComponent(item.category)}&name=${encodeURIComponent(item.name)}`;
+        });
+
+        // Bind delete action
+        document.getElementById("delete-batch-btn").addEventListener("click", async () => {
+          if (confirm(`Are you sure you want to delete the food record "${item.name}"?`)) {
+            await API.deleteFood(item.id);
+            alert("Record deleted successfully.");
+            window.location.href = "inventory.html";
+          }
+        });
+      });
+
+      function showError() {
+        document.getElementById("details-view-container").style.display = "none";
+        document.getElementById("error-card").style.display = "block";
+      }
+
+      const CATEGORY_IMAGE_URLS = {
+        "Fruits": "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&q=80&w=600",
+        "Vegetables": "https://images.unsplash.com/photo-1566393028639-d108a42c46a7?auto=format&fit=crop&q=80&w=600",
+        "Dairy Products": "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=600",
+        "Meat & Poultry": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&q=80&w=600",
+        "Seafood": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=600",
+        "Bakery Products": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=600",
+        "Packaged Foods": "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600",
+        "Beverages": "https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&q=80&w=600"
+      };
+
+      function renderFoodDetails(item) {
+        // Set metadata elements
+        document.getElementById("food-detail-name").textContent = item.name;
+        document.getElementById("meta-batch").textContent = item.batchId;
+        document.getElementById("meta-category").textContent = item.category;
+        document.getElementById("meta-quantity").textContent = `${item.quantity} Units`;
+        document.getElementById("meta-packaging").textContent = item.packagingType || "Crate / Loose";
+        document.getElementById("meta-purchase").textContent = item.purchaseDate;
+        document.getElementById("meta-location").textContent = item.storageLocation;
+
+        document.getElementById("env-temp").textContent = `${item.temperature}°C`;
+        document.getElementById("env-humidity").textContent = `${item.humidity}%`;
+        document.getElementById("env-air").textContent = item.airCirculation || "Optimal";
+        document.getElementById("env-light").textContent = item.lightExposure || "None";
+
+        document.getElementById("ai-spoilage").textContent = `${item.spoilageProbability}%`;
+        document.getElementById("ai-quality").textContent = `${item.qualityScore}%`;
+        document.getElementById("ai-shelflife").textContent = `${item.shelfLifeRemainingDays} Days`;
+
+        // Apply Image based on category or custom mock
+        const fallbackImg = CATEGORY_IMAGE_URLS[item.category] || CATEGORY_IMAGE_URLS["Packaged Foods"];
+        document.getElementById("food-detail-img").src = fallbackImg;
+
+        // Apply badge status
+        const badge = document.getElementById("food-detail-badge");
+        badge.textContent = item.status;
+        badge.className = `badge-status ${item.status.toLowerCase().replace(" ", "-")}`;
+
+        // Circular score animation
+        document.getElementById("details-score-val").textContent = `${item.freshnessScore}%`;
+        
+        // Circular progress circle logic
+        setTimeout(() => {
+          const circle = document.getElementById("details-score-circle");
+          if (circle) {
+            // Formula: dashoffset = strokeDashArray - (score / 100) * strokeDashArray
+            const maxVal = 527.7;
+            const offset = maxVal - (item.freshnessScore / 100) * maxVal;
+            circle.style.strokeDashoffset = offset;
+            
+            // Set circle stroke color dynamically
+            if (item.freshnessScore >= 80) circle.style.stroke = "var(--primary)";
+            else if (item.freshnessScore >= 65) circle.style.stroke = "var(--warning)";
+            else if (item.freshnessScore >= 50) circle.style.stroke = "var(--near-spoilage)";
+            else circle.style.stroke = "var(--spoiled)";
+          }
+        }, 100);
+
+        // Render AI Recommendations
+        const recsBox = document.getElementById("recommendations-box");
+        let recItems = [];
+
+        if (item.status === "Fresh") {
+          recItems.push({ icon: "fa-circle-check", text: "Storage conditions are optimal. Maintain current settings.", alert: false });
+          recItems.push({ icon: "fa-circle-info", text: "Product is highly stable. Fit for normal supply chain distribution.", alert: false });
+        } else if (item.status === "Warning") {
+          recItems.push({ icon: "fa-triangle-exclamation", text: "Average storage temperature fluctuated slightly. Audit sensor logs.", alert: true });
+          recItems.push({ icon: "fa-hourglass", text: "Shelf life decreases rapidly if stored outside refrigerator. Consume within 2 days.", alert: true });
+        } else if (item.status === "Near Spoilage") {
+          recItems.push({ icon: "fa-circle-exclamation", text: "Item is approaching expiry. Relocate immediately to checkout/markdown rack.", alert: true });
+          recItems.push({ icon: "fa-snowflake", text: "Lower zone storage temperature by 1.5°C to retard metabolic respiration.", alert: true });
+        } else if (item.status === "Spoiled") {
+          recItems.push({ icon: "fa-skull-crossbones", text: "Discard immediately. Mold or decay spores present visual health hazard.", alert: false, danger: true });
+          recItems.push({ icon: "fa-circle-xmark", text: "Flag batch code in audit register. Clean storage shelves to prevent cross-contamination.", alert: false, danger: true });
+        }
+
+        recsBox.innerHTML = recItems.map(rec => {
+          let itemClass = "";
+          if (rec.alert) itemClass = "alert-item";
+          else if (rec.danger) itemClass = "danger-item";
+          
+          let iconColor = "var(--primary)";
+          if (rec.alert) iconColor = "var(--near-spoilage)";
+          else if (rec.danger) iconColor = "var(--spoiled)";
+
+          return `
+            <li class="recommendation-item ${itemClass}">
+              <i class="fa-solid ${rec.icon}" style="color: ${iconColor}; font-size: 1.15rem; margin-top: 2px;"></i>
+              <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-main);">${rec.text}</span>
+            </li>
+          `;
+        }).join("");
+
+        // Analysis logs rendering
+        const logBody = document.getElementById("history-logs-body");
+        
+        // Generate mock analysis checks
+        const mockLogs = [
+          { date: item.purchaseDate + " 09:30 AM", type: "Visual AI scan", score: `${item.freshnessScore}%`, result: item.status },
+          { date: item.purchaseDate + " 09:15 AM", type: "Storage compliance check", score: `${Math.min(100, item.freshnessScore + 2)}%`, result: "Optimal" }
+        ];
+
+        logBody.innerHTML = mockLogs.map(log => `
+          <tr>
+            <td>${log.date}</td>
+            <td>${log.type}</td>
+            <td style="font-weight: 600;">${log.score}</td>
+            <td><span class="badge-status ${log.result.toLowerCase().replace(" ", "-")}">${log.result}</span></td>
+          </tr>
+        `).join("");
+      }
+    </script>
+  </body>
+</html>

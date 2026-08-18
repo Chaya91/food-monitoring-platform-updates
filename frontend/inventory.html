@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <style>
+      .category-icon-frame {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+      }
+      /* Category colored badges */
+      .cat-fruits { background-color: rgba(16, 185, 129, 0.1); color: #10b981; }
+      .cat-vegetables { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; }
+      .cat-dairy { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+      .cat-meat { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
+      .cat-seafood { background-color: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+      .cat-bakery { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+      .cat-packaged { background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+      .cat-beverages { background-color: rgba(236, 72, 153, 0.1); color: #ec4899; }
+      
+      /* Dialog modals */
+      .modal-fg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(2px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1.5rem;
+      }
+      .modal-fg.active {
+        display: flex;
+      }
+      .modal-content-fg {
+        background-color: var(--bg-sidebar);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 500px;
+        box-shadow: var(--shadow-lg);
+        animation: fadeIn 0.2s ease forwards;
+        overflow: hidden;
+      }
+      .modal-header-fg {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .modal-header-fg h4 {
+        font-family: var(--font-heading);
+        font-weight: 700;
+        margin: 0;
+      }
+      .modal-body-fg {
+        padding: 1.5rem;
+      }
+      .modal-footer-fg {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          
+          <!-- Filters & Action Bar -->
+          <div class="controls-bar">
+            <div class="controls-filters">
+              <!-- Inline search inside inventory -->
+              <div class="search-bar-container" style="order: 0;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search food name..." class="search-input" id="inventory-search">
+              </div>
+
+              <!-- Category select -->
+              <select id="filter-category" class="input-fg" style="width: 160px; height: 38px; border-radius: var(--radius-md);">
+                <option value="All">All Categories</option>
+                <option value="Fruits">Fruits</option>
+                <option value="Vegetables">Vegetables</option>
+                <option value="Dairy Products">Dairy Products</option>
+                <option value="Meat & Poultry">Meat & Poultry</option>
+                <option value="Seafood">Seafood</option>
+                <option value="Bakery Products">Bakery Products</option>
+                <option value="Packaged Foods">Packaged Foods</option>
+                <option value="Beverages">Beverages</option>
+              </select>
+
+              <!-- Freshness select -->
+              <select id="filter-freshness" class="input-fg" style="width: 160px; height: 38px; border-radius: var(--radius-md);">
+                <option value="All">All Freshness</option>
+                <option value="Fresh">Fresh</option>
+                <option value="Warning">Warning</option>
+                <option value="Near Spoilage">Near Spoilage</option>
+                <option value="Spoiled">Spoiled</option>
+              </select>
+
+              <!-- Expiry filter select -->
+              <select id="filter-expiry" class="input-fg" style="width: 160px; height: 38px; border-radius: var(--radius-md);">
+                <option value="All">All Expiry</option>
+                <option value="Expired">Already Expired</option>
+                <option value="3days">Expires within 3 Days</option>
+                <option value="7days">Expires within 7 Days</option>
+              </select>
+            </div>
+
+            <!-- Add food btn (Will show for roles that allow inventory modifications) -->
+            <button class="btn-fg btn-fg-primary" id="add-food-redirect-btn">
+              <i class="fa-solid fa-plus"></i> Add Food
+            </button>
+          </div>
+
+          <!-- Inventory List -->
+          <div class="card-freshguard fg-table-card animate-fade-in">
+            <div class="fg-table-wrapper">
+              <table class="fg-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">Icon</th>
+                    <th>Food Name</th>
+                    <th>Category</th>
+                    <th>Batch ID</th>
+                    <th>Qty</th>
+                    <th>Freshness</th>
+                    <th>Shelf Life</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th style="text-align: right; width: 120px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Edit Food Modal Dialog -->
+    <div class="modal-fg" id="edit-food-modal">
+      <div class="modal-content-fg">
+        <div class="modal-header-fg">
+          <h4>Edit Food Record</h4>
+          <button class="table-action-btn" onclick="closeEditModal()" style="font-size: 1.1rem;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body-fg">
+          <form id="edit-food-form">
+            <input type="hidden" id="edit-id">
+            
+            <div class="form-group-fg">
+              <label for="edit-name">Food Name</label>
+              <input type="text" id="edit-name" class="input-fg" required>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group-fg">
+                <label for="edit-category">Category</label>
+                <select id="edit-category" class="input-fg" required>
+                  <option value="Fruits">Fruits</option>
+                  <option value="Vegetables">Vegetables</option>
+                  <option value="Dairy Products">Dairy Products</option>
+                  <option value="Meat & Poultry">Meat & Poultry</option>
+                  <option value="Seafood">Seafood</option>
+                  <option value="Bakery Products">Bakery Products</option>
+                  <option value="Packaged Foods">Packaged Foods</option>
+                  <option value="Beverages">Beverages</option>
+                </select>
+              </div>
+              <div class="form-group-fg">
+                <label for="edit-batch">Batch ID</label>
+                <input type="text" id="edit-batch" class="input-fg" required>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group-fg">
+                <label for="edit-quantity">Quantity</label>
+                <input type="number" id="edit-quantity" class="input-fg" min="1" required>
+              </div>
+              <div class="form-group-fg">
+                <label for="edit-expiry">Expected Expiry</label>
+                <input type="date" id="edit-expiry" class="input-fg" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group-fg">
+                <label for="edit-temp">Storage Temp (°C)</label>
+                <input type="number" id="edit-temp" class="input-fg" step="0.1" required>
+              </div>
+              <div class="form-group-fg">
+                <label for="edit-humidity">Storage Humidity (%)</label>
+                <input type="number" id="edit-humidity" class="input-fg" step="1" min="0" max="100" required>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer-fg">
+          <button class="btn-fg btn-fg-secondary" onclick="closeEditModal()">Cancel</button>
+          <button class="btn-fg btn-fg-primary" id="save-edit-btn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <!-- Page Specific Script -->
+    <script src="js/inventory.js"></script>
+  </body>
+</html>

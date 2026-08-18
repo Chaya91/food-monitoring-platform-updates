@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Storage Monitoring - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- ChartJS via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .sensor-dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.75rem;
+      }
+      .sensor-card-fg {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 120px;
+      }
+      .sensor-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .sensor-card-header i {
+        font-size: 1.2rem;
+      }
+      .sensor-card-value {
+        font-family: var(--font-heading);
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--text-main);
+        margin: 0.5rem 0 0.25rem;
+      }
+      .sensor-card-status {
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      
+      .storage-panel-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+      }
+      @media (max-width: 1100px) {
+        .storage-panel-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          
+          <!-- Dropdown Area Selector -->
+          <div class="controls-bar" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-weight: 700; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Monitoring Zone:</span>
+              <select id="storage-zone-selector" class="input-fg" style="width: 220px; height: 38px; border-radius: var(--radius-md);">
+                <option value="Cold Storage A">Cold Storage A (Fruits & Cheese)</option>
+                <option value="Cold Storage B">Cold Storage B (Dairy & Seafood)</option>
+                <option value="Freezer Zone A">Freezer Zone A (Poultry & Meat)</option>
+                <option value="Shelf B1">Shelf B1 (Dry Shelf - Bananas)</option>
+                <option value="Shelf C2">Shelf C2 (Ambient Tomatoes)</option>
+              </select>
+            </div>
+
+            <button class="btn-fg btn-fg-primary" id="view-zone-details-btn">
+              <i class="fa-solid fa-circle-info"></i> View Compliance Report
+            </button>
+          </div>
+
+          <!-- Main Status Cards Row -->
+          <div class="sensor-dashboard-grid animate-fade-in" id="sensor-cards-grid">
+            <!-- 1. Temperature -->
+            <div class="card-freshguard sensor-card-fg">
+              <div class="sensor-card-header">
+                <span>Temperature</span>
+                <i class="fa-solid fa-temperature-half"></i>
+              </div>
+              <div class="sensor-card-value" id="sens-val-temp">4.2°C</div>
+              <div class="sensor-card-status text-fresh" id="sens-status-temp">● Optimal</div>
+            </div>
+
+            <!-- 2. Humidity -->
+            <div class="card-freshguard sensor-card-fg">
+              <div class="sensor-card-header">
+                <span>Humidity</span>
+                <i class="fa-solid fa-droplet"></i>
+              </div>
+              <div class="sensor-card-value" id="sens-val-humidity">62%</div>
+              <div class="sensor-card-status text-fresh" id="sens-status-humidity">● Optimal</div>
+            </div>
+
+            <!-- 3. Air Circulation -->
+            <div class="card-freshguard sensor-card-fg">
+              <div class="sensor-card-header">
+                <span>Air Circulation</span>
+                <i class="fa-solid fa-wind"></i>
+              </div>
+              <div class="sensor-card-value" id="sens-val-air">High</div>
+              <div class="sensor-card-status text-fresh" id="sens-status-air">● Optimal</div>
+            </div>
+
+            <!-- 4. Light Exposure -->
+            <div class="card-freshguard sensor-card-fg">
+              <div class="sensor-card-header">
+                <span>Light Exposure</span>
+                <i class="fa-solid fa-sun"></i>
+              </div>
+              <div class="sensor-card-value" id="sens-val-light">None</div>
+              <div class="sensor-card-status text-fresh" id="sens-status-light">● Optimal</div>
+            </div>
+
+            <!-- 5. Storage Duration -->
+            <div class="card-freshguard sensor-card-fg">
+              <div class="sensor-card-header">
+                <span>Active Batches</span>
+                <i class="fa-solid fa-boxes-stacked"></i>
+              </div>
+              <div class="sensor-card-value" id="sens-val-batches">6 Batches</div>
+              <div class="sensor-card-status text-muted" id="sens-status-batches">Monitoring active</div>
+            </div>
+          </div>
+
+          <!-- Charts and Recommendations Split -->
+          <div class="storage-panel-layout">
+            
+            <!-- Left Side: Line Charts -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <div class="card-freshguard" style="height: 380px; display: flex; flex-direction: column;">
+                <div class="chart-card-header">
+                  <span class="chart-card-title" id="temp-chart-title">Temperature Telemetry History (Last 24 Hours)</span>
+                  <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
+                </div>
+                <div class="chart-canvas-wrapper">
+                  <canvas id="storage-temp-history"></canvas>
+                </div>
+              </div>
+
+              <div class="card-freshguard" style="height: 380px; display: flex; flex-direction: column;">
+                <div class="chart-card-header">
+                  <span class="chart-card-title" id="humidity-chart-title">Moisture relative humidity Telemetry History (%)</span>
+                  <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
+                </div>
+                <div class="chart-canvas-wrapper">
+                  <canvas id="storage-humidity-history"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Recommendation List & Batches listing in this Storage -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              
+              <!-- Diagnostics Alerts Card -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Zone Diagnostics</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;" id="storage-recs-box">
+                  <!-- Loaded dynamically -->
+                </div>
+              </div>
+
+              <!-- Batches list in this Storage -->
+              <div class="card-freshguard">
+                <h4 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1rem;">Active Batches in Zone</h4>
+                <div class="fg-table-wrapper">
+                  <table class="fg-table" style="font-size: 0.8rem;">
+                    <thead>
+                      <tr>
+                        <th>Batch Code</th>
+                        <th>Product</th>
+                        <th>Freshness</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="zone-batches-table-body">
+                      <!-- Loaded dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <!-- Page Specific Script -->
+    <script src="js/storage.js"></script>
+  </body>
+</html>

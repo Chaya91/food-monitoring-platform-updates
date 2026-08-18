@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Food - FreshGuard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    
+    <style>
+      .form-grid-fg {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+      }
+      @media (max-width: 992px) {
+        .form-grid-fg {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      /* Toast notification */
+      .toast-fg {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background-color: var(--primary);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        display: none;
+        align-items: center;
+        gap: 12px;
+        z-index: 2000;
+        animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      
+      @keyframes slideIn {
+        from { transform: translateY(100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Dynamic Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Dynamic Navbar Header -->
+        <header id="navbar-container"></header>
+
+        <!-- Main Body Content -->
+        <main class="content-body">
+          <div class="card-freshguard animate-fade-in" style="max-width: 1000px; margin: 0 auto;">
+            <h3 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+              <i class="fa-solid fa-circle-plus text-fresh" style="margin-right: 8px;"></i> Add Food Batch
+            </h3>
+
+            <form id="add-food-form" class="form-grid-fg">
+              <!-- Left side: Parameters -->
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="form-group-fg">
+                  <label for="food-name">Food Product Name</label>
+                  <input type="text" id="food-name" class="input-fg" placeholder="e.g. Honeycrisp Apples" required />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group-fg">
+                    <label for="food-category">Category</label>
+                    <select id="food-category" class="input-fg" required>
+                      <option value="" disabled selected>Select category...</option>
+                      <option value="Fruits">Fruits</option>
+                      <option value="Vegetables">Vegetables</option>
+                      <option value="Dairy Products">Dairy Products</option>
+                      <option value="Meat & Poultry">Meat & Poultry</option>
+                      <option value="Seafood">Seafood</option>
+                      <option value="Bakery Products">Bakery Products</option>
+                      <option value="Packaged Foods">Packaged Foods</option>
+                      <option value="Beverages">Beverages</option>
+                    </select>
+                  </div>
+                  <div class="form-group-fg">
+                    <label for="food-batch">Batch ID</label>
+                    <input type="text" id="food-batch" class="input-fg" placeholder="e.g. AP-991" required />
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group-fg">
+                    <label for="food-quantity">Quantity (Units/Kg)</label>
+                    <input type="number" id="food-quantity" class="input-fg" placeholder="100" min="1" required />
+                  </div>
+                  <div class="form-group-fg">
+                    <label for="food-packaging">Packaging Type</label>
+                    <select id="food-packaging" class="input-fg" required>
+                      <option value="Crate / Loose">Crate / Loose</option>
+                      <option value="Vacuum Seal">Vacuum Seal</option>
+                      <option value="Sealed Plastic Bag">Sealed Plastic Bag</option>
+                      <option value="Plastic Wrap">Plastic Wrap</option>
+                      <option value="Tetra Pak">Tetra Pak</option>
+                      <option value="Wax Paper Wrap">Wax Paper Wrap</option>
+                      <option value="Carton Box">Carton Box</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group-fg">
+                    <label for="purchase-date">Purchase Date</label>
+                    <input type="date" id="purchase-date" class="input-fg" required />
+                  </div>
+                  <div class="form-group-fg">
+                    <label for="storage-date">Storage Date</label>
+                    <input type="date" id="storage-date" class="input-fg" required />
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group-fg">
+                    <label for="expiry-date">Expected Expiry Date</label>
+                    <input type="date" id="expiry-date" class="input-fg" required />
+                  </div>
+                  <div class="form-group-fg">
+                    <label for="storage-location">Storage Location</label>
+                    <select id="storage-location" class="input-fg" required>
+                      <option value="Cold Storage A">Cold Storage A</option>
+                      <option value="Cold Storage B">Cold Storage B</option>
+                      <option value="Freezer Zone A">Freezer Zone A</option>
+                      <option value="Shelf A1">Shelf A1</option>
+                      <option value="Shelf B1">Shelf B1</option>
+                      <option value="Shelf C1">Shelf C1</option>
+                      <option value="Shelf C2">Shelf C2</option>
+                      <option value="Shelf C3">Shelf C3</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group-fg">
+                    <label for="storage-temp">Storage Temp (°C)</label>
+                    <input type="number" id="storage-temp" class="input-fg" placeholder="4.0" step="0.1" required />
+                  </div>
+                  <div class="form-group-fg">
+                    <label for="storage-humidity">Storage Humidity (%)</label>
+                    <input type="number" id="storage-humidity" class="input-fg" placeholder="75" min="0" max="100" required />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right side: Visual dropzone and submit -->
+              <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 1.5rem;">
+                <div class="form-group-fg" style="margin-bottom: 0;">
+                  <label>Product Visual Image</label>
+                  
+                  <div class="dropzone-fg" id="image-dropzone">
+                    <input type="file" id="file-picker-input" style="display: none;" accept="image/*">
+                    <div id="dropzone-placeholder">
+                      <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                      <div class="dropzone-text">Drag & drop or Click</div>
+                      <div class="dropzone-subtext">Supports JPG, PNG up to 5MB</div>
+                    </div>
+                    
+                    <div class="dropzone-preview" id="image-preview-frame">
+                      <img id="image-preview-element" src="#" alt="Upload Preview">
+                      <button type="button" class="dropzone-remove-btn" id="remove-image-trigger"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 1rem;">
+                  <button type="submit" class="btn-fg btn-fg-primary" style="height: 44px; width: 100%;">
+                    <i class="fa-solid fa-plus"></i> Add to Inventory
+                  </button>
+                  <button type="button" class="btn-fg btn-fg-secondary" style="height: 44px; width: 100%;" onclick="window.location.href='inventory.html'">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Success Toast Injected dynamically -->
+    <div class="toast-fg" id="success-toast">
+      <i class="fa-solid fa-circle-check" style="font-size: 1.5rem;"></i>
+      <div>
+        <strong style="display: block;">Success</strong>
+        <span id="toast-message">Food batch logged successfully.</span>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Automatically default dates to today
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById("purchase-date").value = todayStr;
+        document.getElementById("storage-date").value = todayStr;
+
+        // Auto calculate default temperature based on storage selection
+        const locSelect = document.getElementById("storage-location");
+        const tempInput = document.getElementById("storage-temp");
+        const humInput = document.getElementById("storage-humidity");
+
+        locSelect.addEventListener("change", () => {
+          const loc = locSelect.value;
+          if (loc.startsWith("Cold Storage")) {
+            tempInput.value = "4.0";
+            humInput.value = "85";
+          } else if (loc.startsWith("Freezer")) {
+            tempInput.value = "-18.0";
+            humInput.value = "45";
+          } else {
+            tempInput.value = "18.0";
+            humInput.value = "60";
+          }
+        });
+        locSelect.dispatchEvent(new Event("change"));
+
+        // Dropzone listeners
+        const dropzone = document.getElementById("image-dropzone");
+        const fileInput = document.getElementById("file-picker-input");
+        const placeholder = document.getElementById("dropzone-placeholder");
+        const previewFrame = document.getElementById("image-preview-frame");
+        const previewImg = document.getElementById("image-preview-element");
+        const removeBtn = document.getElementById("remove-image-trigger");
+
+        dropzone.addEventListener("click", (e) => {
+          // Trigger file picker if click was not on remove button
+          if (!removeBtn.contains(e.target)) {
+            fileInput.click();
+          }
+        });
+
+        // Drag events
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+          }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+          }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          if (files.length > 0) {
+            fileInput.files = files;
+            displayPreview(files[0]);
+          }
+        });
+
+        fileInput.addEventListener('change', () => {
+          if (fileInput.files.length > 0) {
+            displayPreview(fileInput.files[0]);
+          }
+        });
+
+        function displayPreview(file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            placeholder.style.display = "none";
+            previewFrame.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        }
+
+        removeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          fileInput.value = "";
+          previewImg.src = "#";
+          previewFrame.style.display = "none";
+          placeholder.style.display = "block";
+        });
+
+        // Submit form
+        document.getElementById("add-food-form").addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const name = document.getElementById("food-name").value.trim();
+          const category = document.getElementById("food-category").value;
+          const batchId = document.getElementById("food-batch").value.trim();
+          const quantity = parseInt(document.getElementById("food-quantity").value);
+          const packagingType = document.getElementById("food-packaging").value;
+          const purchaseDate = document.getElementById("purchase-date").value;
+          const storageDate = document.getElementById("storage-date").value;
+          const expiryDate = document.getElementById("expiry-date").value;
+          const storageLocation = document.getElementById("storage-location").value;
+          const temperature = parseFloat(document.getElementById("storage-temp").value);
+          const humidity = parseInt(document.getElementById("storage-humidity").value);
+
+          // Expiry validity check
+          if (new Date(expiryDate) < new Date(storageDate)) {
+            alert("Expected expiry date cannot be earlier than storage date!");
+            return;
+          }
+
+          // Generate simulated AI scoring based on settings and parameters
+          const today = new Date();
+          const expDate = new Date(expiryDate);
+          const shelfLifeRemainingDays = Math.max(0, Math.ceil((expDate - today) / (1000 * 60 * 60 * 24)));
+
+          // Formulas & Calculations
+          const tempOptimal = 4.0;
+          const humOptimal = 70.0;
+          const tempScore = Math.max(0, 100 - Math.abs(temperature - tempOptimal) * 10);
+          const humScore = Math.max(0, 100 - Math.abs(humidity - humOptimal) * 3);
+          const storageCondition = Math.round(tempScore * 0.6 + humScore * 0.4);
+
+          const visualCondition = 95; // Initial visual condition assumed excellent
+          const productAge = 100; // Freshly stocked
+          const shelfLifeScore = Math.min(100, Math.round(shelfLifeRemainingDays * 5));
+
+          const freshnessScore = Math.round(
+            visualCondition * 0.40 +
+            storageCondition * 0.25 +
+            shelfLifeScore * 0.20 +
+            productAge * 0.15
+          );
+
+          let status = "Fresh";
+          if (freshnessScore < 50) status = "Spoiled";
+          else if (freshnessScore < 65) status = "Near Spoilage";
+          else if (freshnessScore < 80) status = "Warning";
+
+          const foodObj = {
+            name,
+            category,
+            batchId,
+            quantity,
+            packagingType,
+            purchaseDate,
+            storageDate,
+            expiryDate,
+            storageLocation,
+            temperature,
+            humidity,
+            airCirculation: "Optimal",
+            lightExposure: "None",
+            visualCondition,
+            storageCondition,
+            productAge,
+            freshnessScore,
+            spoilageProbability: Math.round((100 - freshnessScore) * 0.4),
+            qualityScore: freshnessScore,
+            shelfLifeRemainingDays,
+            status
+          };
+
+          try {
+            await API.createFood(foodObj);
+
+            // Log activity alert
+            const alerts = MockStore.getAlerts();
+            alerts.unshift({
+              id: "a_add_" + Date.now().toString().slice(-4),
+              type: "Inventory Alert",
+              level: "Information",
+              title: "New inventory added",
+              target: `${name} Batch #${batchId}`,
+              details: `Batch created and assigned to ${storageLocation}. Initial freshness rating: ${freshnessScore}%.`,
+              timestamp: "Just now",
+              read: false
+            });
+            MockStore.saveAlerts(alerts);
+
+            // Trigger success toast
+            const toast = document.getElementById("success-toast");
+            document.getElementById("toast-message").textContent = `Successfully added "${name}" batch.`;
+            toast.style.display = "flex";
+
+            setTimeout(() => {
+              window.location.href = "inventory.html";
+            }, 1800);
+
+          } catch (err) {
+            alert(`Error adding food item: ${err.message}`);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
