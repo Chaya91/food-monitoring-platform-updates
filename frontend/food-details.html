@@ -1,1551 +1,1777 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-<title>Food Details</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<style>
-:root {
-    --bg: #050914;
-    --card: #0b111e;
-    --card2: #111a29;
-    --border: #202b3d;
-    --text: #f5f7fa;
-    --muted: #929caf;
-    --primary: #18dbea;
-    --fresh: #00d49a;
-    --warning: #ff9800;
-    --near: #ffc107;
-    --spoiled: #ff174f;
-    --good: #8b7cff;
-}
+    <title>Food Details - Food Freshness Monitoring</title>
 
-* {
-    box-sizing: border-box;
-}
+    <style>
 
-body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: Arial, Helvetica, sans-serif;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-.header {
-    height: 110px;
-    background: #0d1422;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 30px;
-    gap: 20px;
-}
+        body {
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
 
-.menu {
-    font-size: 28px;
-}
+            background: #f5f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
 
-.header-title {
-    font-size: 25px;
-    font-weight: 700;
-}
+        /* =====================================================
+           HEADER
+           ===================================================== */
 
-.header-search {
-    margin-left: auto;
-    width: 280px;
-    padding: 13px 18px;
-    border-radius: 25px;
-    background: #172131;
-    border: 1px solid #2b374b;
-    color: var(--muted);
-}
+        header {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
 
-.container {
-    max-width: 1200px;
-    margin: 25px auto;
-    padding: 0 20px 60px;
-}
+            padding: 18px 35px;
 
-.back {
-    display: inline-block;
-    color: white;
-    text-decoration: none;
-    padding: 12px 18px;
-    background: #111827;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
 
-.card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 20px;
-}
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-.hero {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 30px;
-}
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #16a34a;
+        }
 
-.food-image {
-    width: 100%;
-    height: 280px;
-    object-fit: cover;
-    border-radius: 18px;
-    background: #111827;
-}
+        .back-btn {
+            border: none;
+            background: #16a34a;
+            color: white;
 
-h1 {
-    font-size: 36px;
-    margin: 0 0 10px;
-}
+            padding: 10px 18px;
 
-h2 {
-    margin-top: 0;
-}
+            border-radius: 8px;
 
-.meta {
-    color: var(--muted);
-    margin-bottom: 20px;
-}
+            cursor: pointer;
 
-.badge {
-    display: inline-block;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 700;
-}
+            font-size: 14px;
+        }
 
-.badge.fresh {
-    color: var(--fresh);
-    background: rgba(0,212,154,.15);
-}
+        .back-btn:hover {
+            background: #15803d;
+        }
 
-.badge.good {
-    color: var(--good);
-    background: rgba(139,124,255,.15);
-}
 
-.badge.warning {
-    color: var(--warning);
-    background: rgba(255,152,0,.15);
-}
+        /* =====================================================
+           MAIN
+           ===================================================== */
 
-.badge.near {
-    color: var(--near);
-    background: rgba(255,193,7,.15);
-}
+        .container {
+            max-width: 1200px;
 
-.badge.spoiled {
-    color: var(--spoiled);
-    background: rgba(255,23,79,.15);
-}
+            margin: 35px auto;
 
-.badge.not-scanned {
-    color: var(--muted);
-    background: rgba(146,156,175,.15);
-}
+            padding: 0 20px;
+        }
 
-.grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
+        .page-title {
+            margin-bottom: 25px;
+        }
 
-.info {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-}
+        .page-title h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
 
-.label {
-    color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 8px;
-}
+        .page-title p {
+            color: #6b7280;
+        }
 
-.value {
-    font-size: 17px;
-    font-weight: 700;
-}
 
-.actions {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-}
+        /* =====================================================
+           DETAILS GRID
+           ===================================================== */
 
-button {
-    border: none;
-    border-radius: 12px;
-    padding: 14px 20px;
-    font-weight: 700;
-    font-size: 15px;
-    cursor: pointer;
-}
+        .details-grid {
+            display: grid;
 
-.scan {
-    background: var(--primary);
-    color: #001017;
-}
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(280px, 1fr)
+                );
 
-.delete {
-    background: var(--spoiled);
-    color: white;
-}
+            gap: 20px;
+        }
 
-.analysis {
-    display: grid;
-    grid-template-columns: 230px 1fr;
-    gap: 30px;
-    align-items: center;
-}
+        .card {
+            background: white;
 
-.gauge {
-    width: 200px;
-    height: 200px;
-    position: relative;
-}
+            border-radius: 14px;
 
-.gauge svg {
-    width: 200px;
-    height: 200px;
-    transform: rotate(-90deg);
-}
+            padding: 24px;
 
-.gauge circle {
-    fill: none;
-    stroke-width: 13;
-}
+            box-shadow:
+                0 4px 15px
+                rgba(0, 0, 0, 0.06);
 
-.gauge-bg {
-    stroke: #202a3a;
-}
+            border: 1px solid #e5e7eb;
+        }
 
-#gauge-value {
-    stroke: var(--primary);
-    stroke-linecap: round;
-    stroke-dasharray: 527.7;
-    stroke-dashoffset: 527.7;
-    transition: .7s ease;
-}
+        .card h2 {
+            font-size: 19px;
 
-.gauge-text {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-}
+            margin-bottom: 20px;
+        }
 
-.gauge-number {
-    font-size: 30px;
-    font-weight: 800;
-}
 
-.recommendation {
-    padding: 14px;
-    border-bottom: 1px solid var(--border);
-}
+        /* =====================================================
+           INFORMATION ROWS
+           ===================================================== */
 
-.recommendation:last-child {
-    border-bottom: none;
-}
+        .info-row {
+            display: flex;
 
-.danger-text {
-    color: #ff6b88;
-}
+            justify-content: space-between;
 
-.warning-text {
-    color: #ffc107;
-}
+            gap: 20px;
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+            padding: 11px 0;
 
-th,
-td {
-    padding: 13px;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-}
+            border-bottom:
+                1px solid #f0f0f0;
+        }
 
-th {
-    color: var(--muted);
-}
+        .info-row:last-child {
+            border-bottom: none;
+        }
 
-#error-card {
-    display: none;
-    text-align: center;
-}
+        .info-label {
+            color: #6b7280;
+        }
 
-.error-icon {
-    width: 65px;
-    height: 65px;
-    margin: 0 auto 20px;
-    border-radius: 50%;
-    background: var(--spoiled);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 35px;
-}
+        .info-value {
+            font-weight: 600;
+            text-align: right;
+        }
 
-@media(max-width: 800px) {
 
-    .hero,
-    .analysis {
-        grid-template-columns: 1fr;
-    }
+        /* =====================================================
+           STATUS
+           ===================================================== */
 
-    .grid {
-        grid-template-columns: 1fr;
-    }
+        .status {
+            display: inline-block;
 
-    .header-search {
-        display: none;
-    }
+            padding: 7px 13px;
 
-    .food-image {
-        height: 220px;
-    }
-}
-</style>
+            border-radius: 20px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+        }
+
+        .status-fresh {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-spoiled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-unknown {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+
+        /* =====================================================
+           IMAGE SECTION
+           ===================================================== */
+
+        .image-card {
+            margin-top: 25px;
+        }
+
+        .image-wrapper {
+            display: flex;
+
+            gap: 25px;
+
+            flex-wrap: wrap;
+        }
+
+        .image-box {
+            flex: 1;
+
+            min-width: 280px;
+        }
+
+        .image-box h3 {
+            margin-bottom: 12px;
+
+            font-size: 16px;
+        }
+
+        .food-image {
+            width: 100%;
+
+            max-width: 500px;
+
+            max-height: 450px;
+
+            object-fit: contain;
+
+            border-radius: 12px;
+
+            border: 1px solid #e5e7eb;
+
+            background: #f9fafb;
+        }
+
+
+        /* =====================================================
+           ROTTEN ANALYSIS
+           ===================================================== */
+
+        #rottenAnalysis {
+            display: none;
+
+            margin-top: 25px;
+        }
+
+        .rotten-header {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            margin-bottom: 20px;
+        }
+
+        .rotten-header h2 {
+            margin: 0;
+        }
+
+        .critical-badge {
+            background: #fee2e2;
+
+            color: #b91c1c;
+
+            padding: 7px 13px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+
+        .rotten-grid {
+            display: grid;
+
+            grid-template-columns:
+                minmax(300px, 1.5fr)
+                minmax(250px, 1fr);
+
+            gap: 25px;
+
+            align-items: start;
+        }
+
+
+        .highlight-container {
+            background: #111827;
+
+            border-radius: 12px;
+
+            padding: 12px;
+
+            text-align: center;
+        }
+
+        .highlight-container img {
+            width: 100%;
+
+            max-height: 500px;
+
+            object-fit: contain;
+
+            border-radius: 8px;
+
+            display: block;
+        }
+
+
+        /* =====================================================
+           ROTTEN METRICS
+           ===================================================== */
+
+        .metrics {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 15px;
+        }
+
+        .metric {
+            background: #f9fafb;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 12px;
+
+            padding: 18px;
+
+            text-align: center;
+        }
+
+        .metric-label {
+            display: block;
+
+            color: #6b7280;
+
+            font-size: 13px;
+
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            display: block;
+
+            font-size: 25px;
+
+            font-weight: 700;
+        }
+
+        .metric-danger {
+            color: #dc2626;
+        }
+
+        .metric-warning {
+            color: #ea580c;
+        }
+
+
+        /* =====================================================
+           PROGRESS BAR
+           ===================================================== */
+
+        .progress-container {
+            margin-top: 20px;
+        }
+
+        .progress-label {
+            display: flex;
+
+            justify-content: space-between;
+
+            margin-bottom: 8px;
+
+            font-size: 13px;
+        }
+
+        .progress {
+            width: 100%;
+
+            height: 12px;
+
+            background: #e5e7eb;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+
+            width: 0%;
+
+            background: #dc2626;
+
+            border-radius: 10px;
+
+            transition:
+                width 0.5s ease;
+        }
+
+
+        /* =====================================================
+           LOADING / ERROR
+           ===================================================== */
+
+        .loading {
+            text-align: center;
+
+            padding: 50px;
+
+            color: #6b7280;
+        }
+
+        .error {
+            background: #fee2e2;
+
+            color: #991b1b;
+
+            padding: 18px;
+
+            border-radius: 10px;
+
+            display: none;
+
+            margin-bottom: 20px;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+           ===================================================== */
+
+        @media (max-width: 800px) {
+
+            .rotten-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 15px 20px;
+            }
+
+            .container {
+                margin-top: 25px;
+            }
+
+            .page-title h1 {
+                font-size: 25px;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
-<header class="header">
-    <div class="menu">☰</div>
-    <div class="header-title">Food Freshness</div>
-    <div class="header-search">⌕ Search...</div>
-</header>
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
 
-<main class="container">
+    <header>
 
-<a href="inventory.html" class="back">
-    ← Back to Inventory
-</a>
-
-<div class="actions">
-
-    <button
-        id="scan-freshness-btn"
-        class="scan">
-        🔍 Re-Analyze Freshness
-    </button>
-
-    <button
-        id="delete-batch-btn"
-        class="delete">
-        🗑 Delete Batch
-    </button>
-
-</div>
-
-<section id="details-view-container">
-
-<div class="card hero">
-
-    <img
-        id="food-detail-img"
-        class="food-image"
-        src=""
-        alt="Food">
-
-    <div>
-
-        <h1 id="food-detail-name">
-            Loading...
-        </h1>
-
-        <div class="meta">
-            Batch:
-            <strong id="meta-batch">-</strong>
-            &nbsp; | &nbsp;
-            Category:
-            <strong id="meta-category">-</strong>
+        <div class="logo">
+            🍎 Food Freshness Monitor
         </div>
 
-        <span
-            id="food-detail-badge"
-            class="badge not-scanned">
-            Loading...
-        </span>
+        <button
+            class="back-btn"
+            onclick="goBack()"
+        >
+            ← Back
+        </button>
 
-        <div class="grid" style="margin-top:25px;">
+    </header>
 
-            <div class="info">
-                <div class="label">Quantity</div>
-                <div
-                    id="meta-quantity"
-                    class="value">
-                    -
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="container">
+
+
+        <div class="page-title">
+
+            <h1>
+                Food Details
+            </h1>
+
+            <p>
+                AI-powered food freshness and
+                rotten-area analysis
+            </p>
+
+        </div>
+
+
+        <!-- ERROR -->
+
+        <div
+            id="errorMessage"
+            class="error"
+        ></div>
+
+
+        <!-- LOADING -->
+
+        <div
+            id="loading"
+            class="loading"
+        >
+            Loading food details...
+        </div>
+
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <div
+            id="foodContent"
+            style="display:none;"
+        >
+
+
+            <!-- =================================================
+                 BASIC INFORMATION
+                 ================================================= -->
+
+            <div class="details-grid">
+
+
+                <!-- FOOD INFORMATION -->
+
+                <div class="card">
+
+                    <h2>
+                        Food Information
+                    </h2>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Food
+                        </span>
+
+                        <span
+                            id="foodName"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Category
+                        </span>
+
+                        <span
+                            id="category"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Batch Number
+                        </span>
+
+                        <span
+                            id="batchNumber"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Quantity
+                        </span>
+
+                        <span
+                            id="quantity"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Manufacture Date
+                        </span>
+
+                        <span
+                            id="manufactureDate"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Expiry Date
+                        </span>
+
+                        <span
+                            id="expiryDate"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
                 </div>
-            </div>
 
-            <div class="info">
-                <div class="label">Packaging</div>
-                <div
-                    id="meta-packaging"
-                    class="value">
-                    -
+
+                <!-- AI PREDICTION -->
+
+                <div class="card">
+
+                    <h2>
+                        🤖 AI Prediction
+                    </h2>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Detected Food
+                        </span>
+
+                        <span
+                            id="predictedFood"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Freshness Status
+                        </span>
+
+                        <span
+                            id="freshnessStatus"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Confidence
+                        </span>
+
+                        <span
+                            id="confidence"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Freshness Score
+                        </span>
+
+                        <span
+                            id="freshnessScore"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Prediction Date
+                        </span>
+
+                        <span
+                            id="predictionDate"
+                            class="info-value"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
                 </div>
+
             </div>
 
-            <div class="info">
-                <div class="label">Manufacture Date</div>
+
+            <!-- =================================================
+                 ORIGINAL IMAGE
+                 ================================================= -->
+
+            <div
+                class="card image-card"
+            >
+
+                <h2>
+                    📷 Food Image
+                </h2>
+
+
                 <div
-                    id="meta-purchase"
-                    class="value">
-                    -
+                    class="image-box"
+                >
+
+                    <img
+                        id="originalImage"
+                        class="food-image"
+                        src=""
+                        alt="Food image"
+                    >
+
                 </div>
+
             </div>
 
-            <div class="info">
-                <div class="label">Storage Location</div>
-                <div
-                    id="meta-location"
-                    class="value">
-                    -
+
+            <!-- =================================================
+                 ROTTEN AREA ANALYSIS
+                 ================================================= -->
+
+            <div
+                id="rottenAnalysis"
+                class="card"
+            >
+
+                <div class="rotten-header">
+
+                    <h2>
+                        🔴 Rotten Area Analysis
+                    </h2>
+
+                    <span
+                        class="critical-badge"
+                    >
+                        SPOILED DETECTED
+                    </span>
+
                 </div>
+
+
+                <div class="rotten-grid">
+
+
+                    <!-- HIGHLIGHTED IMAGE -->
+
+                    <div>
+
+                        <h3
+                            style="
+                                margin-bottom:12px;
+                                font-size:16px;
+                            "
+                        >
+                            AI Highlighted Image
+                        </h3>
+
+
+                        <div
+                            class="highlight-container"
+                        >
+
+                            <img
+                                id="rottenHighlightImage"
+                                src=""
+                                alt="AI detected rotten areas"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- METRICS -->
+
+                    <div>
+
+                        <div
+                            class="metrics"
+                        >
+
+
+                            <div class="metric">
+
+                                <span
+                                    class="metric-label"
+                                >
+                                    Rotten Area
+                                </span>
+
+                                <span
+                                    id="rottenPercentage"
+                                    class="metric-value metric-danger"
+                                >
+                                    0%
+                                </span>
+
+                            </div>
+
+
+                            <div class="metric">
+
+                                <span
+                                    class="metric-label"
+                                >
+                                    Rotten Regions
+                                </span>
+
+                                <span
+                                    id="rottenRegions"
+                                    class="metric-value metric-danger"
+                                >
+                                    0
+                                </span>
+
+                            </div>
+
+
+                            <div class="metric">
+
+                                <span
+                                    class="metric-label"
+                                >
+                                    AI Confidence
+                                </span>
+
+                                <span
+                                    id="rottenConfidence"
+                                    class="metric-value metric-warning"
+                                >
+                                    0%
+                                </span>
+
+                            </div>
+
+
+                            <div class="metric">
+
+                                <span
+                                    class="metric-label"
+                                >
+                                    Status
+                                </span>
+
+                                <span
+                                    id="rottenStatus"
+                                    class="metric-value metric-danger"
+                                    style="
+                                        font-size:18px;
+                                    "
+                                >
+                                    Spoiled
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PROGRESS -->
+
+                        <div
+                            class="progress-container"
+                        >
+
+                            <div
+                                class="progress-label"
+                            >
+
+                                <span>
+                                    Estimated Rotten Area
+                                </span>
+
+                                <span
+                                    id="rottenProgressText"
+                                >
+                                    0%
+                                </span>
+
+                            </div>
+
+
+                            <div
+                                class="progress"
+                            >
+
+                                <div
+                                    id="rottenProgressBar"
+                                    class="progress-bar"
+                                ></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
-        </div>
 
-    </div>
-
-</div>
-
-
-<div class="card">
-
-<h2>Freshness Analysis</h2>
-
-<div class="analysis">
-
-    <div class="gauge">
-
-        <svg viewBox="0 0 200 200">
-
-            <circle
-                class="gauge-bg"
-                cx="100"
-                cy="100"
-                r="84">
-            </circle>
-
-            <circle
-                id="gauge-value"
-                cx="100"
-                cy="100"
-                r="84">
-            </circle>
-
-        </svg>
-
-        <div class="gauge-text">
+            <!-- =================================================
+                 NO ROTTEN AREA MESSAGE
+                 ================================================= -->
 
             <div
-                id="details-score-val"
-                class="gauge-number">
-                0.0%
+                id="noRottenAnalysis"
+                class="card"
+                style="
+                    display:none;
+                    margin-top:25px;
+                "
+            >
+
+                <h2>
+                    ✅ No Rotten Area Analysis
+                </h2>
+
+                <p
+                    style="
+                        color:#6b7280;
+                        margin-top:10px;
+                    "
+                >
+                    The food was not classified as
+                    spoiled, so rotten-area highlighting
+                    was not generated.
+                </p>
+
             </div>
 
-            <div style="color:var(--muted)">
-                Freshness
-            </div>
 
         </div>
 
-    </div>
+    </main>
 
 
-    <div class="grid">
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
 
-        <div class="info">
-            <div class="label">
-                AI Predicted Food
-            </div>
+    <script>
 
-            <div
-                id="ai-food"
-                class="value">
-                -
-            </div>
-        </div>
+        /* =====================================================
+           CONFIGURATION
+           ===================================================== */
 
-        <div class="info">
-            <div class="label">
-                AI Spoilage Probability
-            </div>
+        const BACKEND_URL =
+            "http://127.0.0.1:8000";
 
-            <div
-                id="ai-spoilage"
-                class="value">
-                -
-            </div>
-        </div>
 
-        <div class="info">
-            <div class="label">
-                AI Confidence
-            </div>
+        /* =====================================================
+           BACK BUTTON
+           ===================================================== */
 
-            <div
-                id="ai-confidence"
-                class="value">
-                -
-            </div>
-        </div>
+        function goBack() {
 
-        <div class="info">
-            <div class="label">
-                AI Quality Score
-            </div>
+            if (
+                document.referrer &&
+                document.referrer !== window.location.href
+            ) {
 
-            <div
-                id="ai-quality"
-                class="value">
-                -
-            </div>
-        </div>
+                window.history.back();
 
-        <div class="info">
-            <div class="label">
-                Shelf Life Remaining
-            </div>
-
-            <div
-                id="ai-shelflife"
-                class="value">
-                -
-            </div>
-        </div>
-
-        <div class="info">
-            <div class="label">
-                Expiry Date
-            </div>
-
-            <div
-                id="meta-expiry"
-                class="value">
-                -
-            </div>
-        </div>
-
-    </div>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>Storage Environment</h2>
-
-<div class="grid">
-
-    <div class="info">
-        <div class="label">Temperature</div>
-        <div id="env-temp" class="value">-</div>
-    </div>
-
-    <div class="info">
-        <div class="label">Humidity</div>
-        <div id="env-humidity" class="value">-</div>
-    </div>
-
-    <div class="info">
-        <div class="label">Air Circulation</div>
-        <div id="env-air" class="value">-</div>
-    </div>
-
-    <div class="info">
-        <div class="label">Light Exposure</div>
-        <div id="env-light" class="value">-</div>
-    </div>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>Recommendations</h2>
-
-<div id="recommendations-box"></div>
-
-</div>
-
-
-<div class="card">
-
-<h2>Prediction History</h2>
-
-<table>
-
-<thead>
-
-<tr>
-<th>Date</th>
-<th>Analysis</th>
-<th>Freshness</th>
-<th>Status</th>
-</tr>
-
-</thead>
-
-<tbody id="history-logs-body"></tbody>
-
-</table>
-
-</div>
-
-</section>
-
-
-<section
-    id="error-card"
-    class="card">
-
-    <div class="error-icon">
-        !
-    </div>
-
-    <h2>
-        Food Item Not Found
-    </h2>
-
-    <p style="color:var(--muted)">
-        The requested inventory item could not be found.
-    </p>
-
-    <a
-        href="inventory.html"
-        class="back">
-        Go to Inventory
-    </a>
-
-</section>
-
-</main>
-
-
-<script>
-
-const BACKEND_URL =
-    "http://127.0.0.1:8000";
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    loadFoodDetails
-);
-
-
-async function loadFoodDetails() {
-
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-
-    const foodId =
-        params.get("id");
-
-
-    console.log(
-        "Food Details ID:",
-        foodId
-    );
-
-
-    if (!foodId) {
-
-        showError();
-
-        return;
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${BACKEND_URL}/inventory/${encodeURIComponent(foodId)}`
-            );
-
-
-        console.log(
-            "Backend status:",
-            response.status
-        );
-
-
-        if (!response.ok) {
-
-            showError();
-
-            return;
-        }
-
-
-        const item =
-            await response.json();
-
-
-        console.log(
-            "Inventory item:",
-            item
-        );
-
-
-        const normalized =
-            normalizeInventoryItem(item);
-
-
-        renderFoodDetails(
-            normalized
-        );
-
-
-        setupButtons(
-            normalized
-        );
-
-    }
-
-    catch(error) {
-
-        console.error(
-            "Food details error:",
-            error
-        );
-
-        showError();
-    }
-}
-
-
-function normalizeInventoryItem(item) {
-
-    const status =
-        item.freshness_status ||
-        "Not Scanned";
-
-
-    let confidence =
-        Number(
-            item.confidence ?? 0
-        );
-
-
-    confidence =
-        Math.max(
-            0,
-            Math.min(
-                1,
-                confidence
-            )
-        );
-
-
-    let freshness = 0;
-
-
-    if (
-        status === "Fresh" ||
-        status === "Good" ||
-        status === "Acceptable"
-    ) {
-
-        freshness =
-            confidence * 100;
-    }
-
-    else if (
-        status === "Spoiled" ||
-        status === "Warning" ||
-        status === "Near Spoilage"
-    ) {
-
-        freshness =
-            (1 - confidence) * 100;
-    }
-
-
-    freshness =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                freshness
-            )
-        );
-
-
-    let shelfLife = 0;
-
-
-    if (item.expiry_date) {
-
-        const today =
-            new Date();
-
-        const expiry =
-            new Date(
-                item.expiry_date
-            );
-
-
-        today.setHours(
-            0,0,0,0
-        );
-
-        expiry.setHours(
-            0,0,0,0
-        );
-
-
-        shelfLife =
-            Math.max(
-                0,
-                Math.ceil(
-                    (
-                        expiry - today
-                    ) /
-                    86400000
-                )
-            );
-    }
-
-
-    let spoilageProbability = 0;
-
-
-    if (
-        status === "Spoiled" ||
-        status === "Warning" ||
-        status === "Near Spoilage"
-    ) {
-
-        spoilageProbability =
-            confidence * 100;
-    }
-
-
-    return {
-
-        id:
-            item.inventory_id,
-
-        name:
-            item.food_name ||
-            "Unknown Food",
-
-        category:
-            item.category ||
-            "Unknown",
-
-        predictedCategory:
-            item.predicted_food_category ||
-            "-",
-
-        batch:
-            item.batch_number ||
-            "-",
-
-        quantity:
-            item.quantity ??
-            0,
-
-        manufacture:
-            item.manufacture_date ||
-            "-",
-
-        expiry:
-            item.expiry_date ||
-            "-",
-
-        status:
-            status,
-
-        confidence:
-            confidence,
-
-        freshness:
-            freshness,
-
-        spoilageProbability:
-            spoilageProbability,
-
-        shelfLife:
-            shelfLife,
-
-        predictionDate:
-            item.prediction_date ||
-            null
-    };
-}
-
-
-function renderFoodDetails(item) {
-
-    setText(
-        "food-detail-name",
-        item.name
-    );
-
-
-    setText(
-        "meta-batch",
-        item.batch
-    );
-
-
-    setText(
-        "meta-category",
-        item.category
-    );
-
-
-    setText(
-        "meta-quantity",
-        `${item.quantity} Units`
-    );
-
-
-    setText(
-        "meta-packaging",
-        "Crate / Loose"
-    );
-
-
-    setText(
-        "meta-purchase",
-        formatDate(
-            item.manufacture
-        )
-    );
-
-
-    setText(
-        "meta-expiry",
-        formatDate(
-            item.expiry
-        )
-    );
-
-
-    setText(
-        "meta-location",
-        "Cold Storage A"
-    );
-
-
-    setText(
-        "env-temp",
-        "4°C"
-    );
-
-
-    setText(
-        "env-humidity",
-        "85%"
-    );
-
-
-    setText(
-        "env-air",
-        "Optimal"
-    );
-
-
-    setText(
-        "env-light",
-        "None"
-    );
-
-
-    setText(
-        "ai-food",
-        item.predictedCategory
-    );
-
-
-    setText(
-        "ai-spoilage",
-        `${item.spoilageProbability.toFixed(2)}%`
-    );
-
-
-    setText(
-        "ai-confidence",
-        `${(
-            item.confidence * 100
-        ).toFixed(2)}%`
-    );
-
-
-    setText(
-        "ai-quality",
-        `${item.freshness.toFixed(2)}%`
-    );
-
-
-    setText(
-        "ai-shelflife",
-        `${item.shelfLife} Days`
-    );
-
-
-    setText(
-        "details-score-val",
-        `${item.freshness.toFixed(2)}%`
-    );
-
-
-    const badge =
-        document.getElementById(
-            "food-detail-badge"
-        );
-
-
-    badge.textContent =
-        item.status;
-
-
-    badge.className =
-        "badge " +
-        getStatusClass(
-            item.status
-        );
-
-
-    const circle =
-        document.getElementById(
-            "gauge-value"
-        );
-
-
-    const circumference =
-        527.7;
-
-
-    const offset =
-        circumference -
-        (
-            item.freshness / 100
-        ) *
-        circumference;
-
-
-    circle.style.strokeDashoffset =
-        offset;
-
-
-    if (
-        item.status ===
-        "Spoiled"
-    ) {
-
-        circle.style.stroke =
-            "var(--spoiled)";
-    }
-
-    else if (
-        item.status ===
-        "Warning"
-    ) {
-
-        circle.style.stroke =
-            "var(--warning)";
-    }
-
-    else if (
-        item.status ===
-        "Near Spoilage"
-    ) {
-
-        circle.style.stroke =
-            "var(--near)";
-    }
-
-    else {
-
-        circle.style.stroke =
-            "var(--fresh)";
-    }
-
-
-    const image =
-        document.getElementById(
-            "food-detail-img"
-        );
-
-
-    image.src =
-        getFoodImage(
-            item.name,
-            item.category
-        );
-
-
-    renderRecommendations(
-        item
-    );
-
-
-    renderHistory(
-        item
-    );
-}
-
-
-function getFoodImage(
-    name,
-    category
-) {
-
-    const n =
-        name.toLowerCase();
-
-
-    if (n.includes("apple")) {
-
-        return "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=800&q=80";
-    }
-
-
-    if (n.includes("banana")) {
-
-        return "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=800&q=80";
-    }
-
-
-    const images = {
-
-        "Fruits":
-        "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&w=800&q=80",
-
-        "Vegetables":
-        "https://images.unsplash.com/photo-1566393028639-d108a42c46a7?auto=format&fit=crop&w=800&q=80",
-
-        "Dairy Products":
-        "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=800&q=80",
-
-        "Meat & Poultry":
-        "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=800&q=80",
-
-        "Seafood":
-        "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80"
-    };
-
-
-    return (
-        images[category] ||
-        images["Fruits"]
-    );
-}
-
-
-function renderRecommendations(item) {
-
-    const box =
-        document.getElementById(
-            "recommendations-box"
-        );
-
-
-    let html = "";
-
-
-    if (
-        item.status ===
-        "Spoiled"
-    ) {
-
-        html += `
-            <div class="recommendation danger-text">
-                ⚠️ Food item is classified as spoiled.
-                Do not use for consumption.
-            </div>
-
-            <div class="recommendation danger-text">
-                🗑 Remove this batch from fresh inventory.
-            </div>
-
-            <div class="recommendation">
-                🤖 AI confidence:
-                ${(item.confidence * 100).toFixed(2)}%
-            </div>
-        `;
-    }
-
-    else if (
-        item.status ===
-        "Not Scanned"
-    ) {
-
-        html += `
-            <div class="recommendation warning-text">
-                📷 This item has not been scanned by the AI model.
-            </div>
-
-            <div class="recommendation">
-                🤖 Click Re-Analyze Freshness to scan this item.
-            </div>
-        `;
-    }
-
-    else if (
-        item.status ===
-        "Near Spoilage"
-    ) {
-
-        html += `
-            <div class="recommendation warning-text">
-                ⚠️ Food is approaching spoilage.
-                Prioritize this batch.
-            </div>
-
-            <div class="recommendation">
-                ❄️ Maintain recommended storage conditions.
-            </div>
-        `;
-    }
-
-    else {
-
-        html += `
-            <div class="recommendation">
-                ✅ Food quality is currently acceptable.
-            </div>
-
-            <div class="recommendation">
-                ❄️ Continue maintaining recommended storage conditions.
-            </div>
-        `;
-    }
-
-
-    box.innerHTML =
-        html;
-}
-
-
-function renderHistory(item) {
-
-    const body =
-        document.getElementById(
-            "history-logs-body"
-        );
-
-
-    if (!item.predictionDate) {
-
-        body.innerHTML = `
-            <tr>
-                <td colspan="4"
-                    style="text-align:center;color:var(--muted)">
-                    No AI prediction history available.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    body.innerHTML = `
-        <tr>
-
-            <td>
-                ${formatDateTime(
-                    item.predictionDate
-                )}
-            </td>
-
-            <td>
-                AI Freshness
-            </td>
-
-            <td>
-                ${item.freshness.toFixed(2)}%
-            </td>
-
-            <td>
-                <span class="badge ${getStatusClass(item.status)}">
-                    ${item.status}
-                </span>
-            </td>
-
-        </tr>
-    `;
-}
-
-
-function setupButtons(item) {
-
-    const scan =
-        document.getElementById(
-            "scan-freshness-btn"
-        );
-
-
-    if (scan) {
-
-        scan.addEventListener(
-            "click",
-            () => {
+            } else {
 
                 window.location.href =
-                    `freshness-analysis.html?inventory_id=${encodeURIComponent(item.id)}&category=${encodeURIComponent(item.category)}&name=${encodeURIComponent(item.name)}`;
+                    "inventory.html";
+
             }
-        );
-    }
+
+        }
 
 
-    const deleteButton =
-        document.getElementById(
-            "delete-batch-btn"
-        );
+        /* =====================================================
+           SAFE TEXT
+           ===================================================== */
+
+        function setText(
+            id,
+            value
+        ) {
+
+            const element =
+                document.getElementById(id);
+
+            if (!element) {
+                return;
+            }
+
+            element.textContent =
+                value ?? "-";
+        }
 
 
-    if (deleteButton) {
+        /* =====================================================
+           STATUS CLASS
+           ===================================================== */
 
-        deleteButton.addEventListener(
-            "click",
-            async () => {
+        function getStatusClass(
+            status
+        ) {
 
-                const confirmDelete =
-                    confirm(
-                        `Delete "${item.name}" batch ${item.batch}?`
+            const normalized =
+                String(
+                    status || ""
+                ).toLowerCase();
+
+            if (
+                normalized === "fresh" ||
+                normalized === "good"
+            ) {
+
+                return "status status-fresh";
+
+            }
+
+            if (
+                normalized === "spoiled"
+            ) {
+
+                return "status status-spoiled";
+
+            }
+
+            if (
+                normalized === "warning" ||
+                normalized === "near spoilage" ||
+                normalized === "acceptable"
+            ) {
+
+                return "status status-warning";
+
+            }
+
+            return "status status-unknown";
+
+        }
+
+
+        /* =====================================================
+           SHOW ROTTEN ANALYSIS
+           ===================================================== */
+
+        function showRottenAnalysis(
+            result
+        ) {
+
+            const rottenContainer =
+                document.getElementById(
+                    "rottenAnalysis"
+                );
+
+            const noRottenContainer =
+                document.getElementById(
+                    "noRottenAnalysis"
+                );
+
+            const highlightImage =
+                document.getElementById(
+                    "rottenHighlightImage"
+                );
+
+
+            const status =
+                String(
+                    result.freshness_status ||
+                    ""
+                ).trim();
+
+
+            const rottenUrl =
+    result.rotten_output_url || null;
+
+
+            /*
+             * Only show the highlighted rotten
+             * image when the API actually
+             * returned one.
+             */
+
+            if (
+                status.toLowerCase() === "spoiled" &&
+                rottenUrl
+            ) {
+
+                rottenContainer.style.display =
+                    "block";
+
+                noRottenContainer.style.display =
+                    "none";
+
+
+                /* -----------------------------------------
+                   Highlighted image
+                   ----------------------------------------- */
+
+                highlightImage.src =
+                    BACKEND_URL +
+                    rottenUrl +
+                    "?t=" +
+                    Date.now();
+
+
+                /* -----------------------------------------
+                   Metrics
+                   ----------------------------------------- */
+
+                const rottenPercentage =
+                    Number(
+                        result.rotten_area_percent ||
+                        0
                     );
 
 
-                if (!confirmDelete) {
+                const rottenRegions =
+                    Number(
+                        result.rotten_regions ||
+                        0
+                    );
 
-                    return;
-                }
+
+                const confidence =
+                    Number(
+                        result.confidence ||
+                        0
+                    ) * 100;
 
 
-                try {
+                setText(
+                    "rottenPercentage",
+                    rottenPercentage.toFixed(2) + "%"
+                );
 
-                    const response =
-                        await fetch(
-                            `${BACKEND_URL}/inventory/${item.id}`,
-                            {
-                                method:
-                                    "DELETE"
-                            }
+
+                setText(
+                    "rottenRegions",
+                    rottenRegions
+                );
+
+
+                setText(
+                    "rottenConfidence",
+                    confidence.toFixed(2) + "%"
+                );
+
+
+                setText(
+                    "rottenStatus",
+                    status
+                );
+
+
+                setText(
+                    "rottenProgressText",
+                    rottenPercentage.toFixed(2) + "%"
+                );
+
+
+                /* -----------------------------------------
+                   Progress bar
+                   ----------------------------------------- */
+
+                const progressBar =
+                    document.getElementById(
+                        "rottenProgressBar"
+                    );
+
+
+                /*
+                 * Keep progress visually capped
+                 * at 100%.
+                 */
+
+                const progress =
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            rottenPercentage
+                        )
+                    );
+
+
+                progressBar.style.width =
+                    progress + "%";
+
+
+                /* -----------------------------------------
+                   Image error handling
+                   ----------------------------------------- */
+
+                highlightImage.onerror =
+                    function () {
+
+                        console.error(
+                            "Could not load rotten image:",
+                            highlightImage.src
+                        );
+
+                        rottenContainer.style.display =
+                            "none";
+
+                        noRottenContainer.style.display =
+                            "block";
+
+                    };
+
+
+            } else {
+
+                rottenContainer.style.display =
+                    "none";
+
+                noRottenContainer.style.display =
+                    "block";
+
+            }
+
+        }
+
+
+        /* =====================================================
+           DISPLAY INVENTORY DATA
+           ===================================================== */
+
+        function displayFoodDetails(
+            data
+        ) {
+
+            /* -----------------------------------------
+               Basic information
+               ----------------------------------------- */
+
+            setText(
+                "foodName",
+                data.food_name
+            );
+
+
+            setText(
+                "category",
+                data.category
+            );
+
+
+            setText(
+                "batchNumber",
+                data.batch_number
+            );
+
+
+            setText(
+                "quantity",
+                data.quantity
+            );
+
+
+            setText(
+                "manufactureDate",
+                data.manufacture_date
+            );
+
+
+            setText(
+                "expiryDate",
+                data.expiry_date
+            );
+
+
+            /* -----------------------------------------
+               AI prediction
+               ----------------------------------------- */
+
+            setText(
+                "predictedFood",
+                data.predicted_food_category ||
+                "Not Scanned"
+            );
+
+
+            const statusElement =
+                document.getElementById(
+                    "freshnessStatus"
+                );
+
+
+            const status =
+                data.freshness_status ||
+                "Not Scanned";
+
+
+            statusElement.textContent =
+                status;
+
+
+            statusElement.className =
+                getStatusClass(
+                    status
+                );
+
+
+            /* -----------------------------------------
+               Confidence
+               ----------------------------------------- */
+
+            const confidence =
+                Number(
+                    data.confidence || 0
+                );
+
+
+            setText(
+                "confidence",
+                (confidence * 100).toFixed(2) + "%"
+            );
+
+
+            /* -----------------------------------------
+               Freshness score
+               ----------------------------------------- */
+
+            if (
+                data.freshness_score !== null &&
+                data.freshness_score !== undefined
+            ) {
+
+                setText(
+                    "freshnessScore",
+                    Number(
+                        data.freshness_score
+                    ).toFixed(2) + "%"
+                );
+
+            } else {
+
+                setText(
+                    "freshnessScore",
+                    "-"
+                );
+
+            }
+
+
+            /* -----------------------------------------
+               Prediction date
+               ----------------------------------------- */
+
+            setText(
+                "predictionDate",
+                data.prediction_date ||
+                "-"
+            );
+
+
+            /* -----------------------------------------
+               Original image
+               ----------------------------------------- */
+
+            if (
+                data.image_path
+            ) {
+
+                let imagePath =
+                    String(
+                        data.image_path
+                    )
+                    .replace(
+                        /\\/g,
+                        "/"
+                    );
+
+
+                /*
+                 * If database stores:
+                 *
+                 * uploads/apple.jpg
+                 *
+                 * convert it to:
+                 *
+                 * http://127.0.0.1:8000/uploads/apple.jpg
+                 */
+
+                if (
+                    imagePath.startsWith(
+                        "uploads/"
+                    )
+                ) {
+
+                    const originalImage =
+                        document.getElementById(
+                            "originalImage"
                         );
 
 
-                    if (!response.ok) {
-
-                        const data =
-                            await response.json()
-                                .catch(
-                                    () => ({})
-                                );
-
-                        throw new Error(
-                            data.error ||
-                            data.detail ||
-                            "Delete failed"
-                        );
-                    }
-
-
-                    alert(
-                        "Record deleted successfully."
-                    );
-
-
-                    window.location.href =
-                        "inventory.html";
+                    originalImage.src =
+                        BACKEND_URL +
+                        "/" +
+                        imagePath +
+                        "?t=" +
+                        Date.now();
 
                 }
 
-                catch(error) {
+            }
 
-                    console.error(
-                        error
+        }
+
+
+        /* =====================================================
+           LOAD INVENTORY DETAILS
+           ===================================================== */
+
+        async function loadFoodDetails() {
+
+            const loading =
+                document.getElementById(
+                    "loading"
+                );
+
+            const content =
+                document.getElementById(
+                    "foodContent"
+                );
+
+            const error =
+                document.getElementById(
+                    "errorMessage"
+                );
+
+
+            try {
+
+                /* -----------------------------------------
+                   Get inventory ID
+                   ----------------------------------------- */
+
+                const params =
+                    new URLSearchParams(
+                        window.location.search
                     );
 
-                    alert(
-                        "Delete failed: " +
-                        error.message
+
+                const inventoryId =
+                    params.get(
+                        "id"
+                    ) ||
+                    params.get(
+                        "inventory_id"
                     );
+
+
+                if (!inventoryId) {
+
+                    throw new Error(
+                        "Inventory ID was not provided in the URL."
+                    );
+
                 }
+
+
+                /* -----------------------------------------
+                   Fetch inventory
+                   ----------------------------------------- */
+
+                const response =
+                    await fetch(
+                        `${BACKEND_URL}/inventory/${inventoryId}`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Failed to load inventory. HTTP ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "Inventory details:",
+                    data
+                );
+
+
+                /* -----------------------------------------
+                   Display data
+                   ----------------------------------------- */
+
+                displayFoodDetails(
+                    data
+                );
+
+
+                /* -----------------------------------------
+                   Rotten analysis
+                   -----------------------------------------
+
+                   IMPORTANT:
+
+                   /inventory/{id} currently returns
+                   the prediction information but does
+                   not return rotten_output_url.
+
+                   Therefore we use the known FastAPI
+                   output location when the item is
+                   spoiled.
+
+                ----------------------------------------- */
+
+                if (
+                    String(
+                        data.freshness_status || ""
+                    ).toLowerCase() ===
+                    "spoiled"
+                ) {
+
+                    const rottenResult = {
+
+    freshness_status:
+        data.freshness_status,
+
+    confidence:
+        data.confidence,
+
+    rotten_area_percent:
+        Number(data.rotten_area_percent || 0),
+
+    rotten_regions:
+        Number(data.rotten_regions || 0),
+
+    rotten_output_url:
+        data.rotten_output_url || null,
+
+    rotten_mask_url:
+        data.rotten_mask_url || null
+};
+
+
+                    showRottenAnalysis(
+                        rottenResult
+                    );
+
+                } else {
+
+                    showRottenAnalysis({
+                        freshness_status:
+                            data.freshness_status
+                    });
+
+                }
+
+
+                /* -----------------------------------------
+                   Show page
+                   ----------------------------------------- */
+
+                loading.style.display =
+                    "none";
+
+                content.style.display =
+                    "block";
+
+
+            } catch (err) {
+
+                console.error(
+                    err
+                );
+
+
+                loading.style.display =
+                    "none";
+
+
+                error.style.display =
+                    "block";
+
+
+                error.textContent =
+                    err.message ||
+                    "Unable to load food details.";
+
+            }
+
+        }
+
+
+        /* =====================================================
+           DIRECT PREDICTION SUPPORT
+           ===================================================== */
+
+        async function predictFoodImage(
+            imageFile,
+            inventoryId
+        ) {
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "file",
+                imageFile
+            );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${BACKEND_URL}/predict?inventory_id=${inventoryId}`,
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                console.log(
+                    "Prediction result:",
+                    result
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        "Prediction failed"
+                    );
+
+                }
+
+
+                /*
+                 * Show rotten analysis
+                 * immediately after prediction.
+                 */
+
+                showRottenAnalysis(
+                    result
+                );
+
+
+                return result;
+
+
+            } catch (error) {
+
+                console.error(
+                    "Prediction error:",
+                    error
+                );
+
+
+                const errorElement =
+                    document.getElementById(
+                        "errorMessage"
+                    );
+
+
+                errorElement.style.display =
+                    "block";
+
+
+                errorElement.textContent =
+                    error.message;
+
+
+                return null;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           INITIALIZE
+           ===================================================== */
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                loadFoodDetails();
+
             }
         );
-    }
-}
 
+    </script>
 
-function getStatusClass(status) {
-
-    switch(status) {
-
-        case "Fresh":
-            return "fresh";
-
-        case "Good":
-            return "good";
-
-        case "Warning":
-            return "warning";
-
-        case "Near Spoilage":
-            return "near";
-
-        case "Spoiled":
-            return "spoiled";
-
-        default:
-            return "not-scanned";
-    }
-}
-
-
-function formatDate(value) {
-
-    if (!value) {
-
-        return "-";
-    }
-
-
-    const date =
-        new Date(value);
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return value;
-    }
-
-
-    return date.toLocaleDateString(
-        "en-IN",
-        {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        }
-    );
-}
-
-
-function formatDateTime(value) {
-
-    if (!value) {
-
-        return "Not scanned";
-    }
-
-
-    const normalized =
-        String(value)
-            .replace(" ", "T");
-
-
-    const date =
-        new Date(
-            normalized
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return value;
-    }
-
-
-    return date.toLocaleString(
-        "en-IN",
-        {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
-}
-
-
-function setText(
-    id,
-    value
-) {
-
-    const element =
-        document.getElementById(
-            id
-        );
-
-
-    if (element) {
-
-        element.textContent =
-            value ?? "-";
-    }
-}
-
-
-function showError() {
-
-    const details =
-        document.getElementById(
-            "details-view-container"
-        );
-
-    const error =
-        document.getElementById(
-            "error-card"
-        );
-
-
-    if (details) {
-
-        details.style.display =
-            "none";
-    }
-
-
-    if (error) {
-
-        error.style.display =
-            "block";
-    }
-}
-
-</script>
 
 </body>
+
 </html>

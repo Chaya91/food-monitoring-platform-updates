@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,6 +48,18 @@ app.add_middleware(
 UPLOAD_FOLDER = Path("uploads")
 UPLOAD_FOLDER.mkdir(exist_ok=True)
 
+# ==========================================================
+# ML OUTPUT FILES
+# ==========================================================
+
+ML_OUTPUT_FOLDER = Path("ml_model") / "outputs"
+ML_OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
+
+app.mount(
+    "/ml-output",
+    StaticFiles(directory=str(ML_OUTPUT_FOLDER)),
+    name="ml-output"
+)
 
 # ==========================================================
 # FRESHNESS SCORE CALCULATION
@@ -223,6 +236,10 @@ def home():
 # IMAGE PREDICTION
 # ==========================================================
 
+# ==========================================================
+# IMAGE PREDICTION
+# ==========================================================
+
 @app.post("/predict")
 async def predict(
     file: UploadFile = File(...),
@@ -234,12 +251,16 @@ async def predict(
     try:
 
         # --------------------------------------------------
-        # Save image
+        # Save uploaded image
         # --------------------------------------------------
+
+        safe_filename = Path(
+            file.filename or "uploaded_image.jpg"
+        ).name
 
         image_path = (
             UPLOAD_FOLDER /
-            file.filename
+            safe_filename
         )
 
         with open(
@@ -252,7 +273,6 @@ async def predict(
                 buffer
             )
 
-
         # --------------------------------------------------
         # ML Prediction
         # --------------------------------------------------
@@ -261,6 +281,7 @@ async def predict(
             str(image_path)
         )
 
+        print("PREDICTION RESULT:", result)
 
         food_category = result[
             "food_category"
@@ -274,9 +295,8 @@ async def predict(
             result["confidence"]
         )
 
-
         # --------------------------------------------------
-        # Correct freshness score
+        # Freshness Score
         # --------------------------------------------------
 
         freshness_score = (
@@ -286,9 +306,50 @@ async def predict(
             )
         )
 
-
         # --------------------------------------------------
-        # Save to database
+        # Rotten Area Results
+        # --------------------------------------------------
+
+        rotten_regions = int(
+            result.get(
+                "rotten_regions",
+                0
+            )
+        )
+
+        rotten_area_percent = float(
+            result.get(
+                "rotten_area_percent",
+                0.0
+            )
+        )
+
+        rotten_output_path = result.get(
+            "rotten_output_path"
+        )
+
+        rotten_mask_path = result.get(
+            "rotten_mask_path"
+        )
+
+            # --------------------------------------------------
+        # Convert ML output paths to browser URLs
+        # --------------------------------------------------
+
+        rotten_output_url = None
+        rotten_mask_url = None
+
+        if rotten_output_path:
+            rotten_output_url = (
+                "/ml-output/rotten/api_rotten.png"
+            )
+
+        if rotten_mask_path:
+            rotten_mask_url = (
+                "/ml-output/rotten/api_rotten_mask.png"
+            )
+        # --------------------------------------------------
+        # Save prediction to database
         # --------------------------------------------------
 
         with engine.begin() as connection:
@@ -314,7 +375,7 @@ async def predict(
                         inventory_id,
 
                     "image_name":
-                        file.filename,
+                        safe_filename,
 
                     "image_path":
                         str(image_path)
@@ -325,7 +386,6 @@ async def predict(
                 image_result.scalar_one()
             )
 
-
             prediction_result = (
                 connection.execute(
                     text("""
@@ -334,14 +394,22 @@ async def predict(
                             image_id,
                             food_category,
                             freshness_status,
-                            confidence
+                            confidence,
+                            rotten_regions,
+            rotten_area_percent,
+            rotten_output_path,
+            rotten_mask_path
                         )
                         VALUES
                         (
                             :image_id,
                             :food_category,
                             :freshness_status,
-                            :confidence
+                            :confidence,
+                            :rotten_regions,
+            :rotten_area_percent,
+            :rotten_output_path,
+            :rotten_mask_path
                         )
                         RETURNING prediction_id
                     """),
@@ -356,7 +424,18 @@ async def predict(
                             freshness_status,
 
                         "confidence":
-                            confidence
+                            confidence,
+                             "rotten_regions":
+            rotten_regions,
+
+        "rotten_area_percent":
+            rotten_area_percent,
+
+        "rotten_output_path":
+            rotten_output_path,
+
+        "rotten_mask_path":
+            rotten_mask_path
                     }
                 )
             )
@@ -365,16 +444,14 @@ async def predict(
                 prediction_result.scalar_one()
             )
 
-
         # --------------------------------------------------
-        # Delete temporary image
+        # Delete temporary uploaded image
         # --------------------------------------------------
 
         if image_path:
             image_path.unlink(
                 missing_ok=True
             )
-
 
         # --------------------------------------------------
         # Response
@@ -398,6 +475,21 @@ async def predict(
                 "freshness_score":
                     freshness_score,
 
+                "rotten_regions":
+                    rotten_regions,
+
+                "rotten_area_percent":
+                    round(
+                        rotten_area_percent,
+                        2
+                    ),
+
+                "rotten_output_url":
+                    rotten_output_url,
+
+                "rotten_mask_url":
+                    rotten_mask_url,
+
                 "prediction_id":
                     prediction_id,
 
@@ -408,7 +500,6 @@ async def predict(
                     inventory_id
             }
         )
-
 
     except Exception as e:
 
@@ -423,8 +514,6 @@ async def predict(
                 "error": str(e)
             }
         )
-
-
 # ==========================================================
 # GET INVENTORY
 # ==========================================================
@@ -546,6 +635,10 @@ def get_inventory():
 # GET SINGLE INVENTORY ITEM
 # ==========================================================
 
+# ==========================================================
+# GET SINGLE INVENTORY ITEM
+# ==========================================================
+
 @app.get("/inventory/{inventory_id}")
 def get_inventory_item(inventory_id: int):
 
@@ -583,6 +676,24 @@ def get_inventory_item(inventory_id: int):
 
                         lp.predicted_at
                             AS prediction_date,
+
+                        COALESCE(
+                            lp.rotten_regions,
+                            0
+                        )
+                            AS rotten_regions,
+
+                        COALESCE(
+                            lp.rotten_area_percent,
+                            0
+                        )
+                            AS rotten_area_percent,
+
+                        lp.rotten_output_path
+                            AS rotten_output_path,
+
+                        lp.rotten_mask_path
+                            AS rotten_mask_path,
 
                         CASE
 
@@ -645,6 +756,14 @@ def get_inventory_item(inventory_id: int):
 
                             p.predicted_at,
 
+                            p.rotten_regions,
+
+                            p.rotten_area_percent,
+
+                            p.rotten_output_path,
+
+                            p.rotten_mask_path,
+
                             ROW_NUMBER() OVER (
                                 PARTITION BY
                                     fi.inventory_id
@@ -678,9 +797,7 @@ def get_inventory_item(inventory_id: int):
                 }
             )
 
-
-            row =result.mappings().first()
-
+            row = result.mappings().first()
 
             if not row:
 
@@ -689,14 +806,51 @@ def get_inventory_item(inventory_id: int):
                     detail="Inventory item not found"
                 )
 
+            data = dict(row)
 
-            return dict(row)
+            # --------------------------------------------------
+            # Convert stored filesystem paths to browser URLs
+            # --------------------------------------------------
 
+            if data.get("rotten_output_path"):
+
+                data["rotten_output_url"] = (
+                    "/ml-output/rotten/api_rotten.png"
+                )
+
+            else:
+
+                data["rotten_output_url"] = None
+
+            if data.get("rotten_mask_path"):
+
+                data["rotten_mask_url"] = (
+                    "/ml-output/rotten/api_rotten_mask.png"
+                )
+
+            else:
+
+                data["rotten_mask_url"] = None
+
+            # --------------------------------------------------
+            # Do not expose internal Windows filesystem paths
+            # --------------------------------------------------
+
+            data.pop(
+                "rotten_output_path",
+                None
+            )
+
+            data.pop(
+                "rotten_mask_path",
+                None
+            )
+
+            return data
 
     except HTTPException:
 
         raise
-
 
     except Exception as e:
 
@@ -706,7 +860,6 @@ def get_inventory_item(inventory_id: int):
                 "error": str(e)
             }
         )
-
 # ==========================================================
 # CREATE INVENTORY
 # ==========================================================
